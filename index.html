@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rubik's Cube Visualizer</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🎲 Rubik's Cube Engine</h1>
+        <p>Interactive 2D & 3D Visualizer</p>
+      </header>
+
+      <div class="main-content">
+        <!-- Left Controls -->
+        <div class="controls-left">
+          <div class="control-section">
+            <h3>View Mode</h3>
+            <div class="mode-selector">
+              <button id="mode-2d" class="mode-btn active">2D Net View</button>
+              <button id="mode-3d" class="mode-btn">3D Interactive</button>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <h3>Face Moves</h3>
+            <div class="move-controls">
+              <div>
+                <div class="move-group-label">Up (U)</div>
+                <div class="move-group">
+                  <button class="move-btn" data-move="U">U</button>
+                  <button class="move-btn" data-move="U'">U'</button>
+                  <button class="move-btn" data-move="U2">U2</button>
+                </div>
+              </div>
+              <div>
+                <div class="move-group-label">Down (D)</div>
+                <div class="move-group">
+                  <button class="move-btn" data-move="D">D</button>
+                  <button class="move-btn" data-move="D'">D'</button>
+                  <button class="move-btn" data-move="D2">D2</button>
+                </div>
+              </div>
+              <div>
+                <div class="move-group-label">Left (L)</div>
+                <div class="move-group">
+                  <button class="move-btn" data-move="L">L</button>
+                  <button class="move-btn" data-move="L'">L'</button>
+                  <button class="move-btn" data-move="L2">L2</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <h3>Sequence Input</h3>
+            <div class="action-controls">
+              <input
+                type="text"
+                id="move-sequence"
+                placeholder="e.g., R U R' U'"
+              />
+              <button id="apply-sequence" class="action-btn">
+                Apply Sequence
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Canvas -->
+        <div class="canvas-container">
+          <canvas id="canvas-2d" class="active"></canvas>
+          <canvas id="canvas-3d"></canvas>
+          <p class="hint" id="hint-3d">💡 Click and drag to rotate</p>
+        </div>
+
+        <!-- Right Controls -->
+        <div class="controls-right">
+          <div class="control-section">
+            <h3>More Moves</h3>
+            <div class="move-controls">
+              <div>
+                <div class="move-group-label">Right (R)</div>
+                <div class="move-group">
+                  <button class="move-btn" data-move="R">R</button>
+                  <button class="move-btn" data-move="R'">R'</button>
+                  <button class="move-btn" data-move="R2">R2</button>
+                </div>
+              </div>
+              <div>
+                <div class="move-group-label">Front (F)</div>
+                <div class="move-group">
+                  <button class="move-btn" data-move="F">F</button>
+                  <button class="move-btn" data-move="F'">F'</button>
+                  <button class="move-btn" data-move="F2">F2</button>
+                </div>
+              </div>
+              <div>
+                <div class="move-group-label">Back (B)</div>
+                <div class="move-group">
+                  <button class="move-btn" data-move="B">B</button>
+                  <button class="move-btn" data-move="B'">B'</button>
+                  <button class="move-btn" data-move="B2">B2</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <h3>Actions</h3>
+            <div class="action-controls">
+              <button id="scramble" class="action-btn">Random Scramble</button>
+              <button id="reset" class="action-btn secondary">
+                Reset to Solved
+              </button>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <h3>Move History</h3>
+            <div class="history">
+              <div id="move-history"></div>
+              <button id="undo" class="action-btn" disabled>Undo Last</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/app.ts"></script>
+  </body>
+</html>

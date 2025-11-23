@@ -1,0 +1,40 @@
+{
+  "name": "rubiks-cube-engine",
+  "version": "1.0.0",
+  "description": "Pure TypeScript Rubik's Cube Engine",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "dev": "ts-node src/index.ts",
+    "web:dev": "vite",
+    "web:build": "vite build",
+    "web:preview": "vite preview"
+  },
+  "keywords": [
+    "rubiks-cube",
+    "typescript",
+    "puzzle"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/three": "^0.160.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10",
+    "vitest": "^1.0.4"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  }
+}

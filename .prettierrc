@@ -1,0 +1,7 @@
+{
+  "semistandard.enable": false,
+  "editor.formatOnSave": true,
+  "files.associations": {
+    "*.ts": "typescript"
+  }
+}
