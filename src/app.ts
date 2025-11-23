@@ -118,10 +118,25 @@ class CubeApp {
   private applyMoveString(moveStr: string): void {
     try {
       const move = parseMove(moveStr);
-      this.cube = applyMove(this.cube, move);
-      this.history.push(clone(this.cube));
-      this.updateHistory(moveStr);
-      this.render();
+
+      // If 3D mode, animate the move
+      if (this.currentMode === "3d") {
+        // Update cube state BEFORE animation
+        this.cube = applyMove(this.cube, move);
+        this.history.push(clone(this.cube));
+        this.updateHistory(moveStr);
+        
+        // Then animate and rebuild with correct colors after
+        this.renderer3D.animateMove(moveStr, () => {
+          this.render(); // Rebuild with new colors
+        });
+      } else {
+        // 2D mode - instant update
+        this.cube = applyMove(this.cube, move);
+        this.history.push(clone(this.cube));
+        this.updateHistory(moveStr);
+        this.render();
+      }
     } catch (error) {
       console.error("Invalid move:", moveStr);
     }
@@ -130,19 +145,52 @@ class CubeApp {
   private applySequence(sequence: string): void {
     const moves = sequence.split(/\s+/).filter((m) => m.length > 0);
 
-    for (const moveStr of moves) {
-      try {
-        const move = parseMove(moveStr);
-        this.cube = applyMove(this.cube, move);
-        this.updateHistory(moveStr);
-      } catch (error) {
-        console.error("Invalid move in sequence:", moveStr);
-        return;
-      }
-    }
+    if (this.currentMode === "3d") {
+      // Animate each move in sequence
+      let index = 0;
 
-    this.history.push(clone(this.cube));
-    this.render();
+      const animateNext = () => {
+        if (index >= moves.length) {
+          this.history.push(clone(this.cube));
+          return;
+        }
+
+        const moveStr = moves[index];
+        try {
+          const move = parseMove(moveStr);
+          this.updateHistory(moveStr);
+
+          // Update state BEFORE animation
+          this.cube = applyMove(this.cube, move);
+
+          this.renderer3D.animateMove(moveStr, () => {
+            this.render(); // Rebuild with new colors
+            index++;
+            animateNext();
+          });
+        } catch (error) {
+          console.error("Invalid move in sequence:", moveStr);
+          return;
+        }
+      };
+
+      animateNext();
+    } else {
+      // 2D mode - instant updates
+      for (const moveStr of moves) {
+        try {
+          const move = parseMove(moveStr);
+          this.cube = applyMove(this.cube, move);
+          this.updateHistory(moveStr);
+        } catch (error) {
+          console.error("Invalid move in sequence:", moveStr);
+          return;
+        }
+      }
+
+      this.history.push(clone(this.cube));
+      this.render();
+    }
   }
 
   private scramble(): void {

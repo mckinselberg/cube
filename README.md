@@ -21,6 +21,7 @@ A fully-typed, immutable Rubik's Cube engine written in pure TypeScript with int
 
 - 🎨 **2D Net View** - Classic unfolded cube layout showing all faces
 - 🎮 **3D Interactive** - WebGL-powered 3D cube with mouse rotation
+- ✨ **Smooth Animations** - Animated face rotations in 3D mode (300ms ease-out)
 - ⌨️ **Move Controls** - Click buttons or type move sequences
 - 🎲 **Scrambler** - Random 20-move scrambles
 - ↩️ **Undo/History** - Full move history with undo functionality
