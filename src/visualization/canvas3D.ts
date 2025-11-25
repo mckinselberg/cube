@@ -48,21 +48,29 @@ export class Canvas3DRenderer {
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    
+
     // Enable debug mode via URL parameter or window object
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('debug') === 'true') {
+    if (urlParams.get("debug") === "true") {
       this.enableDebug();
     }
-    
+
     // Expose debug controls to window for console access
     (window as any).cubeDebug = {
       enable: () => this.enableDebug(),
       disable: () => this.disableDebug(),
-      setSlowMotion: (factor: number) => { this.debug.slowMotion = factor; },
-      logAnimations: (val: boolean) => { this.debug.logAnimations = val; },
-      logPositions: (val: boolean) => { this.debug.logCubiePositions = val; },
-      highlightCubies: (val: boolean) => { this.debug.highlightAnimatingCubies = val; },
+      setSlowMotion: (factor: number) => {
+        this.debug.slowMotion = factor;
+      },
+      logAnimations: (val: boolean) => {
+        this.debug.logAnimations = val;
+      },
+      logPositions: (val: boolean) => {
+        this.debug.logCubiePositions = val;
+      },
+      highlightCubies: (val: boolean) => {
+        this.debug.highlightAnimatingCubies = val;
+      },
       getState: () => this.debug,
     };
     // Scene setup
@@ -248,8 +256,15 @@ export class Canvas3DRenderer {
       }
 
       // Debug: Log progress
-      if (this.debug.logAnimations && progress > 0 && progress < 1 && Math.random() < 0.1) {
-        console.log(`   Progress: ${(progress * 100).toFixed(0)}% | Rotation: ${(this.animation.currentAngle * 180 / Math.PI).toFixed(1)}°`);
+      if (
+        this.debug.logAnimations &&
+        progress > 0 &&
+        progress < 1 &&
+        Math.random() < 0.1
+      ) {
+        console.log(
+          `   Progress: ${(progress * 100).toFixed(0)}% | Rotation: ${((this.animation.currentAngle * 180) / Math.PI).toFixed(1)}°`,
+        );
       }
 
       // Check if animation is complete
@@ -262,7 +277,9 @@ export class Canvas3DRenderer {
           const nextAnimation = this.animationQueue.shift();
           if (nextAnimation) {
             if (this.debug.logAnimations) {
-              console.log(`▶️  Starting next queued animation (${this.animationQueue.length} remaining)`);
+              console.log(
+                `▶️  Starting next queued animation (${this.animationQueue.length} remaining)`,
+              );
             }
             nextAnimation();
           }
@@ -285,7 +302,9 @@ export class Canvas3DRenderer {
         // Queue if already animating
         this.animationQueue.push(() => this.animateMove(move, onComplete));
         if (this.debug.logAnimations) {
-          console.log(`⏸️  Animation queued: ${move} (queue size: ${this.animationQueue.length})`);
+          console.log(
+            `⏸️  Animation queued: ${move} (queue size: ${this.animationQueue.length})`,
+          );
         }
         return;
       }
@@ -297,7 +316,7 @@ export class Canvas3DRenderer {
         console.log(`🎬 Starting animation: ${move}`);
         console.log(`   Cubies to rotate: ${cubies.length}`);
         console.log(`   Axis: (${axis.x}, ${axis.y}, ${axis.z})`);
-        console.log(`   Angle: ${(angle * 180 / Math.PI).toFixed(1)}°`);
+        console.log(`   Angle: ${((angle * 180) / Math.PI).toFixed(1)}°`);
       }
 
       if (cubies.length === 0) {
@@ -319,7 +338,9 @@ export class Canvas3DRenderer {
         const localQuaternion = cubie.quaternion.clone();
 
         if (this.debug.logCubiePositions && index < 3) {
-          console.log(`   Cubie ${index}: pos(${localPosition.x.toFixed(2)}, ${localPosition.y.toFixed(2)}, ${localPosition.z.toFixed(2)})`);
+          console.log(
+            `   Cubie ${index}: pos(${localPosition.x.toFixed(2)}, ${localPosition.y.toFixed(2)}, ${localPosition.z.toFixed(2)})`,
+          );
         }
 
         this.cubeGroup.remove(cubie);
@@ -327,7 +348,7 @@ export class Canvas3DRenderer {
 
         cubie.position.copy(localPosition);
         cubie.quaternion.copy(localQuaternion);
-        
+
         // Highlight animating cubies
         if (this.debug.highlightAnimatingCubies) {
           const mesh = cubie as THREE.Mesh;
@@ -358,7 +379,7 @@ export class Canvas3DRenderer {
           if (this.debug.logAnimations) {
             console.log(`✅ Animation complete: ${move}`);
           }
-          
+
           // Move cubies back to main group
           const cubiesToMove = [...rotationGroup.children];
           cubiesToMove.forEach((cubie) => {
@@ -433,39 +454,39 @@ export class Canvas3DRenderer {
           if (pos.y > threshold) {
             cubies.push(cubie);
             axis = new THREE.Vector3(0, 1, 0);
+            angle = -angle; // Reverse for U (right-hand rule correction)
           }
           break;
         case "D": // Bottom layer (y = -1)
           if (pos.y < -threshold) {
             cubies.push(cubie);
-            axis = new THREE.Vector3(0, -1, 0);
-            angle = -angle; // Reverse for bottom
+            axis = new THREE.Vector3(0, 1, 0);
           }
           break;
         case "R": // Right layer (x = 1)
           if (pos.x > threshold) {
             cubies.push(cubie);
             axis = new THREE.Vector3(1, 0, 0);
+            angle = -angle; // Reverse for right (right-hand rule correction)
           }
           break;
         case "L": // Left layer (x = -1)
           if (pos.x < -threshold) {
             cubies.push(cubie);
-            axis = new THREE.Vector3(-1, 0, 0);
-            angle = -angle; // Reverse for left
+            axis = new THREE.Vector3(1, 0, 0);
           }
           break;
         case "F": // Front layer (z = 1)
           if (pos.z > threshold) {
             cubies.push(cubie);
             axis = new THREE.Vector3(0, 0, 1);
+            angle = -angle; // Reverse for F (right-hand rule correction)
           }
           break;
         case "B": // Back layer (z = -1)
           if (pos.z < -threshold) {
             cubies.push(cubie);
-            axis = new THREE.Vector3(0, 0, -1);
-            angle = -angle; // Reverse for back
+            axis = new THREE.Vector3(0, 0, 1);
           }
           break;
       }
@@ -482,12 +503,16 @@ export class Canvas3DRenderer {
     this.debug.enabled = true;
     this.debug.logAnimations = true;
     this.debug.logCubiePositions = true;
-    console.log('🔧 Cube debug mode ENABLED');
-    console.log('Available commands:');
-    console.log('  window.cubeDebug.setSlowMotion(2) - Half speed animations');
-    console.log('  window.cubeDebug.highlightCubies(true) - Highlight animating cubies');
-    console.log('  window.cubeDebug.logAnimations(false) - Toggle animation logs');
-    console.log('  window.cubeDebug.getState() - View current debug state');
+    console.log("🔧 Cube debug mode ENABLED");
+    console.log("Available commands:");
+    console.log("  window.cubeDebug.setSlowMotion(2) - Half speed animations");
+    console.log(
+      "  window.cubeDebug.highlightCubies(true) - Highlight animating cubies",
+    );
+    console.log(
+      "  window.cubeDebug.logAnimations(false) - Toggle animation logs",
+    );
+    console.log("  window.cubeDebug.getState() - View current debug state");
   }
 
   disableDebug(): void {
@@ -495,6 +520,6 @@ export class Canvas3DRenderer {
     this.debug.logAnimations = false;
     this.debug.logCubiePositions = false;
     this.debug.highlightAnimatingCubies = false;
-    console.log('🔧 Cube debug mode DISABLED');
+    console.log("🔧 Cube debug mode DISABLED");
   }
 }

@@ -121,15 +121,15 @@ class CubeApp {
 
       // If 3D mode, animate the move
       if (this.currentMode === "3d") {
-        // Update cube state BEFORE animation
-        this.cube = applyMove(this.cube, move);
-        this.history.push(clone(this.cube));
-        this.updateHistory(moveStr);
-        
-        // Then animate and rebuild with correct colors after
+        // Animate first with current state, then update
         this.renderer3D.animateMove(moveStr, () => {
+          // Update cube state AFTER animation completes
+          this.cube = applyMove(this.cube, move);
+          this.history.push(clone(this.cube));
           this.render(); // Rebuild with new colors
         });
+        // Update history immediately for UI feedback
+        this.updateHistory(moveStr);
       } else {
         // 2D mode - instant update
         this.cube = applyMove(this.cube, move);
@@ -158,12 +158,13 @@ class CubeApp {
         const moveStr = moves[index];
         try {
           const move = parseMove(moveStr);
+          // Update history immediately for UI feedback
           this.updateHistory(moveStr);
 
-          // Update state BEFORE animation
-          this.cube = applyMove(this.cube, move);
-
+          // Animate first, then update state
           this.renderer3D.animateMove(moveStr, () => {
+            // Update state AFTER animation
+            this.cube = applyMove(this.cube, move);
             this.render(); // Rebuild with new colors
             index++;
             animateNext();
