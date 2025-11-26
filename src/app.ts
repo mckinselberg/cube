@@ -96,6 +96,56 @@ class CubeApp {
     document.getElementById("undo")?.addEventListener("click", () => {
       this.undo();
     });
+
+    // Keyboard shortcuts
+    document.addEventListener("keydown", (e) => {
+      this.handleKeyPress(e);
+    });
+  }
+
+  private handleKeyPress(e: KeyboardEvent): void {
+    // Ignore if typing in input field
+    if (e.target instanceof HTMLInputElement) return;
+
+    // Prevent default for our shortcuts
+    const validKeys = ["u", "r", "f", "d", "l", "b", "z"];
+    if (validKeys.includes(e.key.toLowerCase())) {
+      e.preventDefault();
+    }
+
+    const shift = e.shiftKey;
+    const ctrl = e.ctrlKey || e.metaKey;
+    const key = e.key.toLowerCase();
+
+    // Special shortcuts
+    if (ctrl && key === "z") {
+      this.undo();
+      return;
+    }
+
+    // Move shortcuts
+    const moveMap: Record<string, string> = {
+      u: "U",
+      r: "R",
+      f: "F",
+      d: "D",
+      l: "L",
+      b: "B",
+    };
+
+    const baseMove = moveMap[key];
+    if (!baseMove) return;
+
+    let move = baseMove;
+    if (shift && ctrl) {
+      // Shift + Ctrl = double move (U2, R2, etc.)
+      move = baseMove + "2";
+    } else if (shift) {
+      // Shift = prime move (U', R', etc.)
+      move = baseMove + "'";
+    }
+
+    this.applyMoveString(move);
   }
 
   private switchTheme(theme: string): void {
