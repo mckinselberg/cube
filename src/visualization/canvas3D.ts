@@ -192,11 +192,12 @@ export class Canvas3DRenderer {
     const materials: THREE.MeshStandardMaterial[] = [];
 
     // Right (+X), Left (-X), Top (+Y), Bottom (-Y), Front (+Z), Back (-Z)
+    // Material array order for THREE.js BoxGeometry
     const faceColors = [
-      x === 2 ? this.getFaceColor(cube.R, 2 - y, z) : 0x000000, // Right
-      x === 0 ? this.getFaceColor(cube.L, 2 - y, 2 - z) : 0x000000, // Left
-      y === 2 ? this.getFaceColor(cube.U, 2 - z, x) : 0x000000, // Top
-      y === 0 ? this.getFaceColor(cube.D, z, x) : 0x000000, // Bottom
+      x === 2 ? this.getFaceColor(cube.R, 2 - y, 2 - z) : 0x000000, // Right - try flipping z
+      x === 0 ? this.getFaceColor(cube.L, 2 - y, z) : 0x000000, // Left - try flipping z
+      y === 2 ? this.getFaceColor(cube.U, z, x) : 0x000000, // Top - try not flipping z
+      y === 0 ? this.getFaceColor(cube.D, 2 - z, x) : 0x000000, // Bottom - try flipping z
       z === 2 ? this.getFaceColor(cube.F, 2 - y, x) : 0x000000, // Front
       z === 0 ? this.getFaceColor(cube.B, 2 - y, 2 - x) : 0x000000, // Back
     ];

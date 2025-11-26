@@ -126,6 +126,7 @@ class CubeApp {
           // Update cube state AFTER animation completes
           this.cube = applyMove(this.cube, move);
           this.history.push(clone(this.cube));
+          console.log(`After ${moveStr}:`, this.cube);
           this.render(); // Rebuild with new colors
         });
         // Update history immediately for UI feedback
@@ -134,6 +135,7 @@ class CubeApp {
         // 2D mode - instant update
         this.cube = applyMove(this.cube, move);
         this.history.push(clone(this.cube));
+        console.log(`After ${moveStr}:`, this.cube);
         this.updateHistory(moveStr);
         this.render();
       }
