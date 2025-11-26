@@ -19,13 +19,15 @@
           <div class="control-section">
             <h3>View Mode</h3>
             <div class="mode-selector">
-              <button id="mode-2d" class="mode-btn active">2D Net View</button>
-              <button id="mode-3d" class="mode-btn">3D Interactive</button>
+              <button id="mode-2d" class="mode-btn">2D Net View</button>
+              <button id="mode-3d" class="mode-btn active">
+                3D Interactive
+              </button>
             </div>
           </div>
 
           <div class="control-section">
-            <h3>Face Moves</h3>
+            <h3>Cube Moves</h3>
             <div class="move-controls">
               <div>
                 <div class="move-group-label">Up (U)</div>
@@ -33,6 +35,22 @@
                   <button class="move-btn" data-move="U">U</button>
                   <button class="move-btn" data-move="U'">U'</button>
                   <button class="move-btn" data-move="U2">U2</button>
+                </div>
+              </div>
+              <div>
+                <div class="move-group-label">Right (R)</div>
+                <div class="move-group">
+                  <button class="move-btn" data-move="R">R</button>
+                  <button class="move-btn" data-move="R'">R'</button>
+                  <button class="move-btn" data-move="R2">R2</button>
+                </div>
+              </div>
+              <div>
+                <div class="move-group-label">Front (F)</div>
+                <div class="move-group">
+                  <button class="move-btn" data-move="F">F</button>
+                  <button class="move-btn" data-move="F'">F'</button>
+                  <button class="move-btn" data-move="F2">F2</button>
                 </div>
               </div>
               <div>
@@ -51,9 +69,50 @@
                   <button class="move-btn" data-move="L2">L2</button>
                 </div>
               </div>
+              <div>
+                <div class="move-group-label">Back (B)</div>
+                <div class="move-group">
+                  <button class="move-btn" data-move="B">B</button>
+                  <button class="move-btn" data-move="B'">B'</button>
+                  <button class="move-btn" data-move="B2">B2</button>
+                </div>
+              </div>
             </div>
           </div>
 
+          <div class="control-section theme-section">
+            <h3>Theme</h3>
+            <div class="theme-selector">
+              <button class="theme-btn active" data-theme="cyber-blue">
+                🌊 Cyber Blue
+              </button>
+              <button class="theme-btn" data-theme="purple-haze">
+                💜 Purple Haze
+              </button>
+              <button class="theme-btn" data-theme="forest-green">
+                🌲 Forest Green
+              </button>
+              <button class="theme-btn" data-theme="sunset-orange">
+                🌅 Sunset Orange
+              </button>
+              <button class="theme-btn" data-theme="midnight-black">
+                🌙 Midnight Black
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Canvas -->
+        <div class="canvas-container">
+          <canvas id="canvas-2d"></canvas>
+          <canvas id="canvas-3d" class="active"></canvas>
+          <p class="hint" id="hint-3d" class="visible">
+            💡 Click and drag to rotate
+          </p>
+        </div>
+
+        <!-- Right Controls -->
+        <div class="controls-right">
           <div class="control-section">
             <h3>Sequence Input</h3>
             <div class="action-controls">
@@ -67,44 +126,12 @@
               </button>
             </div>
           </div>
-        </div>
 
-        <!-- Center Canvas -->
-        <div class="canvas-container">
-          <canvas id="canvas-2d" class="active"></canvas>
-          <canvas id="canvas-3d"></canvas>
-          <p class="hint" id="hint-3d">💡 Click and drag to rotate</p>
-        </div>
-
-        <!-- Right Controls -->
-        <div class="controls-right">
           <div class="control-section">
-            <h3>More Moves</h3>
-            <div class="move-controls">
-              <div>
-                <div class="move-group-label">Right (R)</div>
-                <div class="move-group">
-                  <button class="move-btn" data-move="R">R</button>
-                  <button class="move-btn" data-move="R'">R'</button>
-                  <button class="move-btn" data-move="R2">R2</button>
-                </div>
-              </div>
-              <div>
-                <div class="move-group-label">Front (F)</div>
-                <div class="move-group">
-                  <button class="move-btn" data-move="F">F</button>
-                  <button class="move-btn" data-move="F'">F'</button>
-                  <button class="move-btn" data-move="F2">F2</button>
-                </div>
-              </div>
-              <div>
-                <div class="move-group-label">Back (B)</div>
-                <div class="move-group">
-                  <button class="move-btn" data-move="B">B</button>
-                  <button class="move-btn" data-move="B'">B'</button>
-                  <button class="move-btn" data-move="B2">B2</button>
-                </div>
-              </div>
+            <h3>Move History</h3>
+            <div class="history">
+              <div id="move-history"></div>
+              <button id="undo" class="action-btn" disabled>Undo Last</button>
             </div>
           </div>
 
@@ -118,28 +145,32 @@
             </div>
           </div>
 
-          <div class="control-section">
-            <h3>Move History</h3>
-            <div class="history">
-              <div id="move-history"></div>
-              <button id="undo" class="action-btn" disabled>Undo Last</button>
-            </div>
-          </div>
-
           <div class="control-section debug-info">
             <details>
-              <summary style="cursor: pointer; user-select: none;">
+              <summary style="cursor: pointer; user-select: none">
                 🔧 Debug Mode
               </summary>
-              <div style="margin-top: 10px; font-size: 0.85rem; color: #666;">
+              <div style="margin-top: 10px; font-size: 0.85rem; color: #666">
                 <p>
                   Add <code>?debug=true</code> to URL or open console and type:
                 </p>
-                <pre style="background: #f5f5f5; padding: 8px; border-radius: 4px; overflow-x: auto;">window.cubeDebug.enable()</pre>
-                <p style="margin-top: 8px;">Commands:</p>
-                <ul style="margin: 8px 0; padding-left: 20px; line-height: 1.6;">
+                <pre
+                  style="
+                    background: #f5f5f5;
+                    padding: 8px;
+                    border-radius: 4px;
+                    overflow-x: auto;
+                  "
+                >
+window.cubeDebug.enable()</pre
+                >
+                <p style="margin-top: 8px">Commands:</p>
+                <ul style="margin: 8px 0; padding-left: 20px; line-height: 1.6">
                   <li><code>setSlowMotion(2)</code> - Half speed</li>
-                  <li><code>highlightCubies(true)</code> - Highlight rotating cubies</li>
+                  <li>
+                    <code>highlightCubies(true)</code> - Highlight rotating
+                    cubies
+                  </li>
                   <li><code>logAnimations(true/false)</code> - Toggle logs</li>
                   <li><code>getState()</code> - View config</li>
                 </ul>

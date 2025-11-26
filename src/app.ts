@@ -8,7 +8,7 @@ class CubeApp {
   private history: Cube[] = [];
   private renderer2D: Canvas2DRenderer;
   private renderer3D: Canvas3DRenderer;
-  private currentMode: "2d" | "3d" = "2d";
+  private currentMode: "2d" | "3d" = "3d";
 
   constructor() {
     this.cube = createSolved();
@@ -25,11 +25,20 @@ class CubeApp {
     this.renderer2D = new Canvas2DRenderer(canvas2D);
     this.renderer3D = new Canvas3DRenderer(canvas3D);
 
+    this.loadThemePreference();
     this.setupEventListeners();
     this.render();
   }
 
   private setupEventListeners(): void {
+    // Theme switching
+    document.querySelectorAll(".theme-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const theme = btn.getAttribute("data-theme");
+        if (theme) this.switchTheme(theme);
+      });
+    });
+
     // Mode switching
     document.getElementById("mode-2d")?.addEventListener("click", () => {
       this.switchMode("2d");
@@ -87,6 +96,36 @@ class CubeApp {
     document.getElementById("undo")?.addEventListener("click", () => {
       this.undo();
     });
+  }
+
+  private switchTheme(theme: string): void {
+    // Remove active class from all theme buttons
+    document.querySelectorAll(".theme-btn").forEach((btn) => {
+      btn.classList.remove("active");
+    });
+
+    // Add active class to selected theme button
+    const selectedBtn = document.querySelector(
+      `.theme-btn[data-theme="${theme}"]`,
+    );
+    selectedBtn?.classList.add("active");
+
+    // Apply theme to document
+    if (theme === "cyber-blue") {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+
+    // Save theme preference
+    localStorage.setItem("cube-theme", theme);
+  }
+
+  private loadThemePreference(): void {
+    const savedTheme = localStorage.getItem("cube-theme");
+    if (savedTheme && savedTheme !== "cyber-blue") {
+      this.switchTheme(savedTheme);
+    }
   }
 
   private switchMode(mode: "2d" | "3d"): void {
