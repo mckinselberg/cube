@@ -110,6 +110,9 @@ export class Canvas3DRenderer {
     // Mouse controls
     this.setupMouseControls(canvas);
 
+    // Touch controls
+    this.setupTouchControls(canvas);
+
     // Initial render
     this.animate();
   }
@@ -140,6 +143,46 @@ export class Canvas3DRenderer {
     });
 
     canvas.addEventListener("mouseleave", () => {
+      this.isDragging = false;
+    });
+  }
+
+  private setupTouchControls(canvas: HTMLCanvasElement): void {
+    let previousTouchPosition = { x: 0, y: 0 };
+
+    canvas.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 1) {
+        this.isDragging = true;
+        previousTouchPosition = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
+        };
+        e.preventDefault();
+      }
+    });
+
+    canvas.addEventListener("touchmove", (e) => {
+      if (!this.isDragging || e.touches.length !== 1) return;
+
+      // Disable rotation during animation
+      if (this.animation) return;
+
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - previousTouchPosition.x;
+      const deltaY = touch.clientY - previousTouchPosition.y;
+
+      this.cubeGroup.rotation.y += deltaX * 0.01;
+      this.cubeGroup.rotation.x += deltaY * 0.01;
+
+      previousTouchPosition = { x: touch.clientX, y: touch.clientY };
+      e.preventDefault();
+    });
+
+    canvas.addEventListener("touchend", () => {
+      this.isDragging = false;
+    });
+
+    canvas.addEventListener("touchcancel", () => {
       this.isDragging = false;
     });
   }

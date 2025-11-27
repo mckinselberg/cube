@@ -26,8 +26,119 @@ class CubeApp {
     this.renderer3D = new Canvas3DRenderer(canvas3D);
 
     this.loadThemePreference();
+    this.setupMobileMoveButtons();
     this.setupEventListeners();
     this.render();
+  }
+
+  private setupMobileMoveButtons(): void {
+    const canvasContainer = document.querySelector(".canvas-container");
+    if (!canvasContainer) return;
+
+    // Create left column (U, F, D)
+    const leftMoves = document.createElement("div");
+    leftMoves.className = "mobile-moves-left";
+    leftMoves.innerHTML = `
+      <button class="mobile-move-btn" data-move="U">U</button>
+      <button class="mobile-move-btn" data-move="F">F</button>
+      <button class="mobile-move-btn" data-move="D">D</button>
+    `;
+
+    // Create right column (R, B, L)
+    const rightMoves = document.createElement("div");
+    rightMoves.className = "mobile-moves-right";
+    rightMoves.innerHTML = `
+      <button class="mobile-move-btn" data-move="R">R</button>
+      <button class="mobile-move-btn" data-move="B">B</button>
+      <button class="mobile-move-btn" data-move="L">L</button>
+    `;
+
+    // Insert before and after canvas
+    const canvas = canvasContainer.querySelector("canvas");
+    if (canvas) {
+      canvasContainer.insertBefore(leftMoves, canvas);
+      canvasContainer.appendChild(rightMoves);
+    }
+
+    // Setup tap/long-press behavior for mobile buttons
+    document.querySelectorAll(".mobile-move-btn").forEach((btn) => {
+      let pressTimer: number | null = null;
+      let lastTap = 0;
+      let isPressing = false;
+
+      const handleStart = (e: Event) => {
+        if (e.type === "touchstart") e.preventDefault();
+        const button = btn as HTMLElement;
+        const move = button.getAttribute("data-move") || "";
+
+        const now = Date.now();
+        const timeSinceLastTap = now - lastTap;
+
+        // Double tap detection (< 300ms)
+        if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+          if (pressTimer) clearTimeout(pressTimer);
+          this.applyMoveString(move + "2");
+          button.style.background = "var(--accent-color)";
+          setTimeout(() => {
+            button.style.background = "";
+          }, 200);
+          lastTap = 0;
+          isPressing = false;
+          return;
+        }
+
+        lastTap = now;
+        isPressing = true;
+
+        // Long press detection (> 500ms)
+        pressTimer = window.setTimeout(() => {
+          if (isPressing) {
+            this.applyMoveString(move + "'");
+            button.style.background = "var(--secondary-color)";
+            setTimeout(() => {
+              button.style.background = "";
+            }, 200);
+            isPressing = false;
+          }
+          pressTimer = null;
+        }, 500);
+      };
+
+      const handleEnd = (e: Event) => {
+        if (e.type === "touchend") e.preventDefault();
+        const button = btn as HTMLElement;
+        const move = button.getAttribute("data-move") || "";
+
+        // If still pressing and timer exists, it's a short tap
+        if (isPressing && pressTimer !== null) {
+          clearTimeout(pressTimer);
+          this.applyMoveString(move);
+          button.style.background = "var(--primary-color)";
+          setTimeout(() => {
+            button.style.background = "";
+          }, 200);
+        }
+
+        isPressing = false;
+        pressTimer = null;
+      };
+
+      const handleCancel = () => {
+        if (pressTimer) clearTimeout(pressTimer);
+        isPressing = false;
+        pressTimer = null;
+      };
+
+      // Touch events for mobile
+      btn.addEventListener("touchstart", handleStart);
+      btn.addEventListener("touchend", handleEnd);
+      btn.addEventListener("touchcancel", handleCancel);
+
+      // Mouse events for desktop testing
+      btn.addEventListener("mousedown", handleStart);
+      btn.addEventListener("mouseup", handleEnd);
+      btn.addEventListener("mouseleave", handleCancel);
+    });
   }
 
   private setupEventListeners(): void {
@@ -48,7 +159,7 @@ class CubeApp {
       this.switchMode("3d");
     });
 
-    // Move buttons
+    // Move buttons (desktop only - mobile has custom handling)
     document.querySelectorAll(".move-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const move = btn.getAttribute("data-move");

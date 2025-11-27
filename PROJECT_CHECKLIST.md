@@ -151,7 +151,7 @@ All test suites include:
 ### UI/UX Improvements
 
 - ✅ Keyboard shortcuts for moves (U/R/F/D/L/B keys, Shift for prime, Shift+Ctrl for double)
-- ⏳ Touch gestures for mobile (swipe to rotate, tap faces to move)
+- ✅ Touch gestures for mobile (swipe to rotate cube)
 - ⏳ Animation speed control
 - ⏳ Cube size customization (2x2x2, 4x4x4)
 

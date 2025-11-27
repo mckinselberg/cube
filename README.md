@@ -20,10 +20,11 @@ A fully-typed, immutable Rubik's Cube engine written in pure TypeScript with int
 ### Web Visualizer
 
 - 🎨 **2D Net View** - Classic unfolded cube layout showing all faces
-- 🎮 **3D Interactive** - WebGL-powered 3D cube with mouse rotation (fully working!)
+- 🎮 **3D Interactive** - WebGL-powered 3D cube with mouse/touch rotation (fully working!)
 - ✨ **Smooth Animations** - Animated face rotations in 3D mode (300ms ease-out)
 - 🐛 **Debug Mode** - Built-in debugging tools for development
 - ⌨️ **Keyboard Shortcuts** - U/R/F/D/L/B keys + modifiers for fast moves
+- 👆 **Touch Gestures** - Swipe to rotate cube on mobile devices
 - 🎨 **Theme System** - 5 color themes with localStorage persistence
 - 🎲 **Move Controls** - Click buttons or type move sequences
 - 🎲 **Scrambler** - Random 20-move scrambles
@@ -107,11 +108,12 @@ The project includes an interactive web-based visualizer with both 2D and 3D vie
 - **Mode Switcher** - Toggle between 2D net and 3D interactive views
 - **18 Move Buttons** - All standard moves (U, U', U2, R, R', R2, etc.)
 - **Keyboard Shortcuts** - Press U/R/F/D/L/B keys for moves, Shift for prime, Shift+Ctrl for double
+- **Touch Gestures** - Swipe to rotate cube on mobile and tablets
 - **Sequence Input** - Type move sequences like "R U R' U'" and press Enter
 - **Random Scramble** - Generate 20-move scrambles
 - **Undo** - Step backward through move history (Ctrl+Z)
 - **Move History Display** - Visual timeline of all applied moves
-- **Mouse Controls** - Drag to rotate 3D cube
+- **Mouse/Touch Controls** - Drag or swipe to rotate 3D cube
 - **Theme System** - 5 color themes with localStorage persistence
 
 ### Technology
