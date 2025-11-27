@@ -3,6 +3,7 @@ import type { Cube } from "./cube/types.ts";
 import { Canvas2DRenderer } from "./visualization/canvas2D.ts";
 import { Canvas3DRenderer } from "./visualization/canvas3D.ts";
 import { Tooltip } from "./meta/Tooltip.ts";
+import { CubeSoundEffects } from "./audio/CubeSoundEffects.ts";
 
 class CubeApp {
   private cube: Cube;
@@ -10,6 +11,7 @@ class CubeApp {
   private renderer2D: Canvas2DRenderer;
   private renderer3D: Canvas3DRenderer;
   private currentMode: "2d" | "3d" = "3d";
+  private soundEffects: CubeSoundEffects;
   private algorithms = {
     beginner: {
       "Sexy Move": {
@@ -119,6 +121,10 @@ class CubeApp {
   constructor() {
     this.cube = createSolved();
     this.history.push(clone(this.cube));
+
+    // Initialize sound effects
+    this.soundEffects = new CubeSoundEffects();
+    this.soundEffects.loadPreferences();
 
     // Initialize renderers
     const canvas2D = document.getElementById("canvas-2d") as HTMLCanvasElement;
@@ -447,6 +453,155 @@ class CubeApp {
     document.addEventListener("keydown", (e) => {
       this.handleKeyPress(e);
     });
+
+    // Sound controls
+    this.setupSoundControls();
+  }
+
+  private setupSoundControls(): void {
+    // Volume
+    const volumeSlider = document.getElementById(
+      "sound-volume",
+    ) as HTMLInputElement;
+    const volumeValue = document.getElementById("sound-volume-value");
+    volumeSlider?.addEventListener("input", (e) => {
+      const value = parseFloat((e.target as HTMLInputElement).value);
+      this.soundEffects.setVolume(value);
+      if (volumeValue) volumeValue.textContent = `${Math.round(value * 100)}%`;
+    });
+
+    // 3-Band EQ
+    const lowSlider = document.getElementById("sound-low") as HTMLInputElement;
+    const lowValue = document.getElementById("sound-low-value");
+    lowSlider?.addEventListener("input", (e) => {
+      const value = parseFloat((e.target as HTMLInputElement).value);
+      this.soundEffects.setLowGain(value);
+      if (lowValue) lowValue.textContent = `${value.toFixed(1)} dB`;
+    });
+
+    const midSlider = document.getElementById("sound-mid") as HTMLInputElement;
+    const midValue = document.getElementById("sound-mid-value");
+    midSlider?.addEventListener("input", (e) => {
+      const value = parseFloat((e.target as HTMLInputElement).value);
+      this.soundEffects.setMidGain(value);
+      if (midValue) midValue.textContent = `${value.toFixed(1)} dB`;
+    });
+
+    const highSlider = document.getElementById(
+      "sound-high",
+    ) as HTMLInputElement;
+    const highValue = document.getElementById("sound-high-value");
+    highSlider?.addEventListener("input", (e) => {
+      const value = parseFloat((e.target as HTMLInputElement).value);
+      this.soundEffects.setHighGain(value);
+      if (highValue) highValue.textContent = `${value.toFixed(1)} dB`;
+    });
+
+    // Brightness filter
+    const brightnessSlider = document.getElementById(
+      "sound-brightness",
+    ) as HTMLInputElement;
+    const brightnessValue = document.getElementById("sound-brightness-value");
+    brightnessSlider?.addEventListener("input", (e) => {
+      const value = parseFloat((e.target as HTMLInputElement).value);
+      this.soundEffects.setBrightness(value);
+      if (brightnessValue)
+        brightnessValue.textContent = `${Math.round(value * 100)}%`;
+    });
+
+    // Envelope
+    const attackSlider = document.getElementById(
+      "sound-attack",
+    ) as HTMLInputElement;
+    const attackValue = document.getElementById("sound-attack-value");
+    attackSlider?.addEventListener("input", (e) => {
+      const value = parseFloat((e.target as HTMLInputElement).value);
+      this.soundEffects.setAttack(value);
+      if (attackValue)
+        attackValue.textContent = `${(value * 1000).toFixed(1)} ms`;
+    });
+
+    const decaySlider = document.getElementById(
+      "sound-decay",
+    ) as HTMLInputElement;
+    const decayValue = document.getElementById("sound-decay-value");
+    decaySlider?.addEventListener("input", (e) => {
+      const value = parseFloat((e.target as HTMLInputElement).value);
+      this.soundEffects.setDecay(value);
+      if (decayValue) decayValue.textContent = `${Math.round(value * 1000)} ms`;
+    });
+
+    // Load saved values and update UI
+    this.loadSoundPreferences();
+  }
+
+  private loadSoundPreferences(): void {
+    // Update slider values from saved preferences
+    const volumeSlider = document.getElementById(
+      "sound-volume",
+    ) as HTMLInputElement;
+    const volumeValue = document.getElementById("sound-volume-value");
+    if (volumeSlider) {
+      volumeSlider.value = this.soundEffects.getVolume().toString();
+      if (volumeValue)
+        volumeValue.textContent = `${Math.round(this.soundEffects.getVolume() * 100)}%`;
+    }
+
+    const lowSlider = document.getElementById("sound-low") as HTMLInputElement;
+    const lowValue = document.getElementById("sound-low-value");
+    if (lowSlider) {
+      lowSlider.value = this.soundEffects.getLowGain().toString();
+      if (lowValue)
+        lowValue.textContent = `${this.soundEffects.getLowGain().toFixed(1)} dB`;
+    }
+
+    const midSlider = document.getElementById("sound-mid") as HTMLInputElement;
+    const midValue = document.getElementById("sound-mid-value");
+    if (midSlider) {
+      midSlider.value = this.soundEffects.getMidGain().toString();
+      if (midValue)
+        midValue.textContent = `${this.soundEffects.getMidGain().toFixed(1)} dB`;
+    }
+
+    const highSlider = document.getElementById(
+      "sound-high",
+    ) as HTMLInputElement;
+    const highValue = document.getElementById("sound-high-value");
+    if (highSlider) {
+      highSlider.value = this.soundEffects.getHighGain().toString();
+      if (highValue)
+        highValue.textContent = `${this.soundEffects.getHighGain().toFixed(1)} dB`;
+    }
+
+    const brightnessSlider = document.getElementById(
+      "sound-brightness",
+    ) as HTMLInputElement;
+    const brightnessValue = document.getElementById("sound-brightness-value");
+    if (brightnessSlider) {
+      brightnessSlider.value = this.soundEffects.getBrightness().toString();
+      if (brightnessValue)
+        brightnessValue.textContent = `${Math.round(this.soundEffects.getBrightness() * 100)}%`;
+    }
+
+    const attackSlider = document.getElementById(
+      "sound-attack",
+    ) as HTMLInputElement;
+    const attackValue = document.getElementById("sound-attack-value");
+    if (attackSlider) {
+      attackSlider.value = this.soundEffects.getAttack().toString();
+      if (attackValue)
+        attackValue.textContent = `${(this.soundEffects.getAttack() * 1000).toFixed(1)} ms`;
+    }
+
+    const decaySlider = document.getElementById(
+      "sound-decay",
+    ) as HTMLInputElement;
+    const decayValue = document.getElementById("sound-decay-value");
+    if (decaySlider) {
+      decaySlider.value = this.soundEffects.getDecay().toString();
+      if (decayValue)
+        decayValue.textContent = `${Math.round(this.soundEffects.getDecay() * 1000)} ms`;
+    }
   }
 
   private handleKeyPress(e: KeyboardEvent): void {
@@ -583,6 +738,9 @@ class CubeApp {
     try {
       const move = parseMove(moveStr);
 
+      // Play appropriate sound effect
+      this.playSoundForMove(moveStr);
+
       // If 3D mode, animate the move
       if (this.currentMode === "3d") {
         // Animate first with current state, then update
@@ -670,6 +828,15 @@ class CubeApp {
     }
   }
 
+  private playSoundForMove(moveStr: string): void {
+    // Extract face from move notation (U, R, F, D, L, B)
+    const face = moveStr.charAt(0);
+    const isPrime = moveStr.includes("'");
+    const isDouble = moveStr.includes("2");
+
+    this.soundEffects.playMoveForFace(face, isPrime, isDouble);
+  }
+
   private scramble(): void {
     const moves = [
       "U",
@@ -698,6 +865,9 @@ class CubeApp {
       const randomMove = moves[Math.floor(Math.random() * moves.length)];
       scrambleSequence.push(randomMove);
     }
+
+    // Play scramble sound
+    this.soundEffects.playScrambleSound();
 
     this.applySequence(scrambleSequence.join(" "));
   }
@@ -859,4 +1029,17 @@ class CubeApp {
 }
 
 // Initialize app when DOM is loaded
-new CubeApp();
+const app = new CubeApp();
+
+// Expose sound effects to console for debugging
+(window as unknown as { cubeSound: CubeSoundEffects }).cubeSound = app[
+  "soundEffects"
+] as CubeSoundEffects;
+(window as unknown as { testSound: () => void }).testSound = () => {
+  console.log(
+    "Audio State:",
+    (app["soundEffects"] as CubeSoundEffects).getAudioState(),
+  );
+  (app["soundEffects"] as CubeSoundEffects).playMoveForFace("U", false, false);
+  console.log("Played test sound for U move");
+};
