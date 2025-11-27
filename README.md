@@ -6,6 +6,12 @@ A fully-typed, immutable Rubik's Cube engine written in pure TypeScript with int
 ![Three.js](https://img.shields.io/badge/Three.js-0.160-green)
 ![Tests](https://img.shields.io/badge/tests-21%20passing-brightgreen)
 
+## 🌐 Live Demo
+
+**[Try it now: https://cube-bk45.onrender.com](https://cube-bk45.onrender.com)**
+
+Interactive 3D Rubik's Cube with multiple themes, algorithms, and smooth animations!
+
 ## ✨ Features
 
 ### Engine
