@@ -338,6 +338,37 @@ header p {
   box-shadow: 0 1px 4px color-mix(in srgb, var(--accent-color) 20%, transparent);
 }
 
+.texture-btn {
+  padding: 8px 10px;
+  border: 1px solid #e5e5e5;
+  background: white;
+  color: #666;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+  opacity: 0.85;
+}
+
+.texture-btn:hover {
+  background: #fafafa;
+  border-color: #ccc;
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+.texture-btn.active {
+  background: var(--success-color);
+  color: white;
+  border-color: var(--success-color);
+  opacity: 1;
+  box-shadow: 0 1px 4px
+    color-mix(in srgb, var(--success-color) 20%, transparent);
+}
+
 .mode-btn {
   padding: 12px;
   border: 2px solid var(--primary-color);

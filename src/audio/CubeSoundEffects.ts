@@ -43,7 +43,7 @@
  *   - Expose parameters (intensity, brightness, decay, randomness) so we can tune how "heavy" or "smooth" the cube feels.
  */
 
-type SoundPreset = "balanced" | "enhanced";
+type SoundPreset = "balanced" | "enhanced" | "custom";
 
 interface PresetParams {
   frictionDuration: number;
@@ -135,6 +135,29 @@ export class CubeSoundEffects {
       snapThockDecay: 0.022,
       snapResonanceGain: 0.22,
       snapResonanceDecay: 0.02,
+    },
+    custom: {
+      frictionDuration: 0.004,
+      frictionGain: 0.15,
+      frictionCutoffBase: 3200,
+      frictionCutoffRange: 2200,
+      frictionQ: 1.0,
+      slideDelay: 0.003,
+      slideDuration: 0.025,
+      slideDurationDouble: 0.035,
+      slideGain: 0.1,
+      slideCenterFreqBase: 2500,
+      slideCenterFreqRange: 700,
+      slideQBase: 1.8,
+      slideQRange: 0.6,
+      snapNoiseGain: 0.55,
+      snapNoiseCutoffBase: 4000,
+      snapNoiseCutoffRange: 3500,
+      snapNoiseQ: 1.8,
+      snapThockGain: 0.25,
+      snapThockDecay: 0.03,
+      snapResonanceGain: 0.18,
+      snapResonanceDecay: 0.025,
     },
   };
 
@@ -549,7 +572,11 @@ export class CubeSoundEffects {
     }
 
     const savedPreset = localStorage.getItem("cube-sound-preset");
-    if (savedPreset === "balanced" || savedPreset === "enhanced") {
+    if (
+      savedPreset === "balanced" ||
+      savedPreset === "enhanced" ||
+      savedPreset === "custom"
+    ) {
       this.currentPreset = savedPreset;
     }
 
@@ -658,7 +685,7 @@ export class CubeSoundEffects {
   }
 
   public getAvailablePresets(): SoundPreset[] {
-    return ["balanced", "enhanced"];
+    return ["balanced", "enhanced", "custom"];
   }
 
   public exportCurrentSettings(): void {

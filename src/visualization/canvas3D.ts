@@ -88,6 +88,48 @@ const cubeThemes: Record<string, CubeTheme> = {
 
 let colorMap: CubeTheme = cubeThemes.classic;
 
+type TextureType = "matte" | "glossy" | "metallic" | "plastic" | "satin";
+
+interface MaterialConfig {
+  roughness: number;
+  metalness: number;
+  emissiveIntensity: number;
+  clearcoat?: number;
+  clearcoatRoughness?: number;
+}
+
+const textureConfigs: Record<TextureType, MaterialConfig> = {
+  matte: {
+    roughness: 0.9,
+    metalness: 0.0,
+    emissiveIntensity: 0.05,
+  },
+  glossy: {
+    roughness: 0.1,
+    metalness: 0.1,
+    emissiveIntensity: 0.15,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.1,
+  },
+  metallic: {
+    roughness: 0.2,
+    metalness: 0.9,
+    emissiveIntensity: 0.2,
+  },
+  plastic: {
+    roughness: 0.3,
+    metalness: 0.2,
+    emissiveIntensity: 0.1,
+  },
+  satin: {
+    roughness: 0.5,
+    metalness: 0.3,
+    emissiveIntensity: 0.12,
+  },
+};
+
+let currentTexture: TextureType = "plastic";
+
 interface AnimationState {
   group: THREE.Group;
   axis: THREE.Vector3;
@@ -419,16 +461,22 @@ export class Canvas3DRenderer {
       z === 0 ? this.getFaceColor(cube.B, 2 - y, 2 - x) : 0x000000, // Back
     ];
 
+    const textureConfig = textureConfigs[currentTexture];
     faceColors.forEach((color) => {
-      materials.push(
-        new THREE.MeshStandardMaterial({
-          color,
-          roughness: 0.3,
-          metalness: 0.2,
-          emissive: color,
-          emissiveIntensity: 0.1,
-        }),
-      );
+      const materialProps: THREE.MeshStandardMaterialParameters = {
+        color,
+        roughness: textureConfig.roughness,
+        metalness: textureConfig.metalness,
+        emissive: color,
+        emissiveIntensity: textureConfig.emissiveIntensity,
+      };
+
+      if (textureConfig.clearcoat !== undefined) {
+        materialProps.clearcoat = textureConfig.clearcoat;
+        materialProps.clearcoatRoughness = textureConfig.clearcoatRoughness;
+      }
+
+      materials.push(new THREE.MeshStandardMaterial(materialProps));
     });
 
     const mesh = new THREE.Mesh(geometry, materials);
@@ -744,11 +792,22 @@ export class Canvas3DRenderer {
     this.fillLight.position.set(-Math.cos(rad) * 8, 5, -Math.sin(rad) * 8);
   }
 
-  setCubeTheme(themeName: string): void {
+  public setCubeTheme(themeName: string): void {
     if (cubeThemes[themeName]) {
       this.currentCubeTheme = themeName;
       colorMap = cubeThemes[themeName];
     }
+  }
+
+  public setTexture(texture: TextureType): void {
+    if (textureConfigs[texture]) {
+      currentTexture = texture;
+      localStorage.setItem("cube-texture", texture);
+    }
+  }
+
+  public getTexture(): TextureType {
+    return currentTexture;
   }
 
   destroy(): void {

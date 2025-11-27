@@ -499,6 +499,14 @@ class CubeApp {
       });
     });
 
+    // Texture switching
+    document.querySelectorAll(".texture-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const texture = btn.getAttribute("data-texture");
+        if (texture) this.switchTexture(texture, btn);
+      });
+    });
+
     // Mode switching
     document.getElementById("mode-2d")?.addEventListener("click", () => {
       this.switchMode("2d");
@@ -634,8 +642,50 @@ class CubeApp {
     presetSelect?.addEventListener("change", (e) => {
       const preset = (e.target as HTMLSelectElement).value as
         | "balanced"
-        | "enhanced";
+        | "enhanced"
+        | "custom";
       this.soundEffects.setPreset(preset);
+
+      // Apply custom preset settings
+      if (preset === "custom") {
+        this.soundEffects.setVolume(0.25);
+        this.soundEffects.setLowGain(0);
+        this.soundEffects.setMidGain(-12);
+        this.soundEffects.setHighGain(12);
+        this.soundEffects.setAttack(0.01);
+        this.soundEffects.setDecay(0.06);
+        this.soundEffects.setBrightness(1);
+
+        // Update UI sliders
+        if (volumeSlider) volumeSlider.value = "0.25";
+        if (volumeValue) volumeValue.textContent = "25%";
+        if (lowSlider) lowSlider.value = "0";
+        if (lowValue) lowValue.textContent = "0.0 dB";
+        if (midSlider) midSlider.value = "-12";
+        if (midValue) midValue.textContent = "-12.0 dB";
+        if (highSlider) highSlider.value = "12";
+        if (highValue) highValue.textContent = "12.0 dB";
+        const attackSlider = document.getElementById(
+          "sound-attack",
+        ) as HTMLInputElement;
+        const attackValue = document.getElementById("sound-attack-value");
+        if (attackSlider) attackSlider.value = "0.01";
+        if (attackValue) attackValue.textContent = "10.0 ms";
+        const decaySlider = document.getElementById(
+          "sound-decay",
+        ) as HTMLInputElement;
+        const decayValue = document.getElementById("sound-decay-value");
+        if (decaySlider) decaySlider.value = "0.06";
+        if (decayValue) decayValue.textContent = "60 ms";
+        const brightnessSlider = document.getElementById(
+          "sound-brightness",
+        ) as HTMLInputElement;
+        const brightnessValue = document.getElementById(
+          "sound-brightness-value",
+        );
+        if (brightnessSlider) brightnessSlider.value = "1";
+        if (brightnessValue) brightnessValue.textContent = "100%";
+      }
     });
 
     // Volume
@@ -879,6 +929,13 @@ class CubeApp {
       );
       if (btn) this.switchCubeTheme(savedCubeTheme, btn);
     }
+
+    // Load cube texture
+    const savedTexture = localStorage.getItem("cube-texture");
+    if (savedTexture) {
+      const btn = document.querySelector(`[data-texture="${savedTexture}"]`);
+      if (btn) this.switchTexture(savedTexture, btn);
+    }
   }
 
   private switchCubeTheme(themeName: string, btn: Element): void {
@@ -899,6 +956,27 @@ class CubeApp {
 
     // Save preference
     localStorage.setItem("cube-color-theme", themeName);
+  }
+
+  private switchTexture(texture: string, btn: Element): void {
+    // Remove active class from all texture buttons
+    document.querySelectorAll(".texture-btn").forEach((b) => {
+      b.classList.remove("active");
+    });
+
+    // Add active class to selected button
+    btn.classList.add("active");
+
+    // Apply texture to 3D renderer
+    this.renderer3D.setTexture(
+      texture as "matte" | "glossy" | "metallic" | "plastic" | "satin",
+    );
+
+    // Re-render to show new texture
+    this.render();
+
+    // Save preference
+    localStorage.setItem("cube-texture", texture);
   }
 
   private switchMode(mode: "2d" | "3d"): void {
