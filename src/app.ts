@@ -9,6 +9,111 @@ class CubeApp {
   private renderer2D: Canvas2DRenderer;
   private renderer3D: Canvas3DRenderer;
   private currentMode: "2d" | "3d" = "3d";
+  private algorithms = {
+    beginner: {
+      "Sexy Move": {
+        sequence: "R U R' U'",
+        description: "Basic move used in many beginner algorithms",
+      },
+      "Right Trigger": {
+        sequence: "R U R' U'",
+        description: "Brings edge pieces into position",
+      },
+      "Left Trigger": {
+        sequence: "L' U' L U",
+        description: "Mirror of right trigger",
+      },
+      Sune: {
+        sequence: "R U R' U R U2 R'",
+        description: "Orients last layer corners",
+      },
+      "Anti-Sune": {
+        sequence: "R U2 R' U' R U' R'",
+        description: "Reverse of Sune",
+      },
+    },
+    oll: {
+      "OLL 21 (H)": {
+        sequence: "F R U R' U' R U R' U' F'",
+        description: "Orients edges in H pattern",
+      },
+      "OLL 27 (Line)": {
+        sequence: "F R U R' U' F'",
+        description: "Orients edges in line pattern",
+      },
+      "OLL 45 (T)": {
+        sequence: "F R U R' U' F'",
+        description: "T-shaped pattern",
+      },
+      "OLL 57 (Gun)": {
+        sequence: "R U R' U' R' F R F'",
+        description: "Small lightning bolt shape",
+      },
+    },
+    pll: {
+      "T-Perm": {
+        sequence: "R U R' U' R' F R2 U' R' U' R U R' F'",
+        description: "Swaps adjacent corners and edges",
+      },
+      "Y-Perm": {
+        sequence: "F R U' R' U' R U R' F' R U R' U' R' F R F'",
+        description: "Diagonal corner swap",
+      },
+      "Ua-Perm": {
+        sequence: "R U' R U R U R U' R' U' R2",
+        description: "3-edge cycle clockwise",
+      },
+      "Ub-Perm": {
+        sequence: "R2 U R U R' U' R' U' R' U R'",
+        description: "3-edge cycle counter-clockwise",
+      },
+      "H-Perm": {
+        sequence: "M2 U M2 U2 M2 U M2",
+        description: "Opposite edge swap (Note: M moves not supported)",
+      },
+    },
+    f2l: {
+      "Basic F2L #1": {
+        sequence: "U R U' R'",
+        description: "Corner and edge already paired",
+      },
+      "Basic F2L #2": {
+        sequence: "U' F' U F",
+        description: "Left-hand version",
+      },
+      "Split Pair": {
+        sequence: "R U' R' U R U R'",
+        description: "Separate and rejoin corner-edge pair",
+      },
+      "Corner Up Edge Front": {
+        sequence: "U R U2 R' U R U' R'",
+        description: "Corner in U, edge in front slot",
+      },
+    },
+    tricks: {
+      Superflip: {
+        sequence: "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
+        description: "Flips all edges while keeping corners solved",
+      },
+      Checkerboard: {
+        sequence: "M2 E2 S2",
+        description:
+          "Creates checkerboard pattern (Note: M,E,S moves not supported, use alternative)",
+      },
+      "Cube in Cube": {
+        sequence: "F L F U' R U F2 L2 U' L' B D' B' L2 U",
+        description: "Creates cube within cube pattern",
+      },
+      "6 Dots": {
+        sequence: "U D' R L' F B' U D'",
+        description: "Creates 6 dot pattern",
+      },
+      "4 Crosses": {
+        sequence: "U R L' U2 R' L U R L' U2 R' L",
+        description: "Creates cross pattern on all faces",
+      },
+    },
+  };
 
   constructor() {
     this.cube = createSolved();
@@ -230,6 +335,33 @@ class CubeApp {
           }
         }
       });
+
+    // Algorithm controls
+    const categorySelect = document.getElementById(
+      "algorithm-category",
+    ) as HTMLSelectElement;
+    const algorithmSelect = document.getElementById(
+      "algorithm-select",
+    ) as HTMLSelectElement;
+    const applyAlgorithmBtn = document.getElementById("apply-algorithm");
+
+    categorySelect?.addEventListener("change", (e) => {
+      const category = (e.target as HTMLSelectElement).value;
+      this.updateAlgorithmList(category);
+    });
+
+    algorithmSelect?.addEventListener("change", (e) => {
+      const algorithmName = (e.target as HTMLSelectElement).value;
+      this.showAlgorithmInfo(algorithmName);
+    });
+
+    applyAlgorithmBtn?.addEventListener("click", () => {
+      const category = categorySelect?.value;
+      const algorithmName = algorithmSelect?.value;
+      if (category && algorithmName) {
+        this.applyAlgorithm(category, algorithmName);
+      }
+    });
 
     // Scramble
     document.getElementById("scramble")?.addEventListener("click", () => {
@@ -554,6 +686,90 @@ class CubeApp {
       } else {
         btn.classList.remove("active");
       }
+    }
+  }
+
+  private updateAlgorithmList(category: string): void {
+    const algorithmSelect = document.getElementById(
+      "algorithm-select",
+    ) as HTMLSelectElement;
+    const applyBtn = document.getElementById(
+      "apply-algorithm",
+    ) as HTMLButtonElement;
+    const algorithmInfo = document.getElementById("algorithm-info");
+
+    if (!algorithmSelect) return;
+
+    // Clear previous options
+    algorithmSelect.innerHTML =
+      '<option value="">Choose an algorithm...</option>';
+
+    if (!category) {
+      algorithmSelect.disabled = true;
+      applyBtn.disabled = true;
+      algorithmInfo?.classList.remove("visible");
+      return;
+    }
+
+    // Populate with algorithms from selected category
+    const algorithms =
+      this.algorithms[category as keyof typeof this.algorithms];
+    Object.keys(algorithms).forEach((name) => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      algorithmSelect.appendChild(option);
+    });
+
+    algorithmSelect.disabled = false;
+    algorithmInfo?.classList.remove("visible");
+  }
+
+  private showAlgorithmInfo(algorithmName: string): void {
+    const categorySelect = document.getElementById(
+      "algorithm-category",
+    ) as HTMLSelectElement;
+    const applyBtn = document.getElementById(
+      "apply-algorithm",
+    ) as HTMLButtonElement;
+    const algorithmInfo = document.getElementById("algorithm-info");
+
+    if (!algorithmName || !algorithmInfo) {
+      algorithmInfo?.classList.remove("visible");
+      if (applyBtn) applyBtn.disabled = true;
+      return;
+    }
+
+    const category = categorySelect.value as keyof typeof this.algorithms;
+    const algorithms = this.algorithms[category];
+
+    // Type-safe algorithm lookup
+    type AlgorithmEntry = { sequence: string; description: string };
+    const algorithm = (algorithms as Record<string, AlgorithmEntry>)[
+      algorithmName
+    ];
+
+    if (algorithm) {
+      algorithmInfo.innerHTML = `
+        <strong>${algorithmName}</strong>
+        ${algorithm.description}<br>
+        <code>${algorithm.sequence}</code>
+      `;
+      algorithmInfo.classList.add("visible");
+      if (applyBtn) applyBtn.disabled = false;
+    }
+  }
+
+  private applyAlgorithm(category: string, algorithmName: string): void {
+    const algorithms =
+      this.algorithms[category as keyof typeof this.algorithms];
+    type AlgorithmEntry = { sequence: string; description: string };
+    const algorithm = (algorithms as Record<string, AlgorithmEntry>)[
+      algorithmName
+    ];
+
+    if (algorithm) {
+      this.applySequence(algorithm.sequence);
     }
   }
 

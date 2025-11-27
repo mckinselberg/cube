@@ -440,6 +440,55 @@ header p {
   gap: 10px;
 }
 
+.algorithm-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.algorithm-select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-dark);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.algorithm-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.algorithm-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--primary-color) 10%, transparent);
+}
+
+.algorithm-info {
+  padding: 10px;
+  background: var(--history-bg);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--label-color);
+  line-height: 1.5;
+  display: none;
+}
+
+.algorithm-info.visible {
+  display: block;
+}
+
+.algorithm-info strong {
+  color: var(--heading-color);
+  display: block;
+  margin-bottom: 4px;
+}
+
 #move-sequence {
   width: 100%;
   padding: 10px;

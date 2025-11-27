@@ -208,6 +208,27 @@
           </div>
 
           <div class="control-section">
+            <h3>🧩 Algorithms</h3>
+            <div class="algorithm-controls">
+              <select id="algorithm-category" class="algorithm-select">
+                <option value="">Select Category...</option>
+                <option value="beginner">Beginner Patterns</option>
+                <option value="oll">OLL (Orient Last Layer)</option>
+                <option value="pll">PLL (Permute Last Layer)</option>
+                <option value="f2l">F2L (First Two Layers)</option>
+                <option value="tricks">Cool Tricks</option>
+              </select>
+              <select id="algorithm-select" class="algorithm-select" disabled>
+                <option value="">Choose an algorithm...</option>
+              </select>
+              <button id="apply-algorithm" class="action-btn" disabled>
+                Apply Algorithm
+              </button>
+              <div id="algorithm-info" class="algorithm-info"></div>
+            </div>
+          </div>
+
+          <div class="control-section">
             <h3>Move History</h3>
             <div class="history">
               <div id="move-history"></div>
