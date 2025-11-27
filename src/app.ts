@@ -150,6 +150,14 @@ class CubeApp {
       });
     });
 
+    // Cube theme switching
+    document.querySelectorAll(".cube-theme-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const cubeTheme = btn.getAttribute("data-cube-theme");
+        if (cubeTheme) this.switchCubeTheme(cubeTheme, btn);
+      });
+    });
+
     // Mode switching
     document.getElementById("mode-2d")?.addEventListener("click", () => {
       this.switchMode("2d");
@@ -157,6 +165,36 @@ class CubeApp {
 
     document.getElementById("mode-3d")?.addEventListener("click", () => {
       this.switchMode("3d");
+    });
+
+    // Toggle face labels
+    document.getElementById("toggle-labels")?.addEventListener("click", () => {
+      this.toggleLabels();
+    });
+
+    // Lighting controls
+    const brightnessSlider = document.getElementById(
+      "brightness-slider",
+    ) as HTMLInputElement;
+    const brightnessValue = document.getElementById("brightness-value");
+    brightnessSlider?.addEventListener("input", (e) => {
+      const value = parseFloat((e.target as HTMLInputElement).value);
+      this.renderer3D.setBrightness(value);
+      if (brightnessValue) {
+        brightnessValue.textContent = `${Math.round(value * 100)}%`;
+      }
+    });
+
+    const lightAngleSlider = document.getElementById(
+      "light-angle-slider",
+    ) as HTMLInputElement;
+    const lightAngleValue = document.getElementById("light-angle-value");
+    lightAngleSlider?.addEventListener("input", (e) => {
+      const value = parseInt((e.target as HTMLInputElement).value);
+      this.renderer3D.setLightAngle(value);
+      if (lightAngleValue) {
+        lightAngleValue.textContent = `${value}°`;
+      }
     });
 
     // Move buttons (desktop only - mobile has custom handling)
@@ -287,6 +325,34 @@ class CubeApp {
     if (savedTheme && savedTheme !== "cyber-blue") {
       this.switchTheme(savedTheme);
     }
+
+    // Load cube color theme
+    const savedCubeTheme = localStorage.getItem("cube-color-theme");
+    if (savedCubeTheme) {
+      const btn = document.querySelector(
+        `[data-cube-theme="${savedCubeTheme}"]`,
+      );
+      if (btn) this.switchCubeTheme(savedCubeTheme, btn);
+    }
+  }
+
+  private switchCubeTheme(themeName: string, btn: Element): void {
+    // Remove active class from all cube theme buttons
+    document.querySelectorAll(".cube-theme-btn").forEach((b) => {
+      b.classList.remove("active");
+    });
+
+    // Add active class to selected button
+    btn.classList.add("active");
+
+    // Apply theme to renderer
+    this.renderer3D.setCubeTheme(themeName);
+
+    // Re-render to show new colors
+    this.render();
+
+    // Save preference
+    localStorage.setItem("cube-color-theme", themeName);
   }
 
   private switchMode(mode: "2d" | "3d"): void {
@@ -477,6 +543,18 @@ class CubeApp {
 
     const undoBtn = document.getElementById("undo") as HTMLButtonElement;
     if (undoBtn) undoBtn.disabled = true;
+  }
+
+  private toggleLabels(): void {
+    const labelsVisible = this.renderer3D.toggleLabels();
+    const btn = document.getElementById("toggle-labels");
+    if (btn) {
+      if (labelsVisible) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    }
   }
 
   private render(): void {

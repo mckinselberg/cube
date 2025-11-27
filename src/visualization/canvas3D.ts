@@ -1,14 +1,92 @@
 import * as THREE from "three";
 import type { Cube, Color } from "../cube/types.ts";
 
-const colorMap: Record<Color, number> = {
-  W: 0xffffff,
-  R: 0xff0000,
-  G: 0x00ff00,
-  Y: 0xffff00,
-  O: 0xff8800,
-  B: 0x0000ff,
+type CubeTheme = Record<Color, number>;
+
+const cubeThemes: Record<string, CubeTheme> = {
+  classic: {
+    W: 0xffffff,
+    R: 0xff0000,
+    G: 0x00ff00,
+    Y: 0xffff00,
+    O: 0xff8800,
+    B: 0x0000ff,
+  },
+  ocean: {
+    W: 0xf0f4f8,
+    R: 0xff6b9d,
+    G: 0x4ecdc4,
+    Y: 0xffd93d,
+    O: 0xff8966,
+    B: 0x667eea,
+  },
+  forest: {
+    W: 0xfaf8f3,
+    R: 0xc1666b,
+    G: 0x52b788,
+    Y: 0xd4a373,
+    O: 0xd08c60,
+    B: 0x4a7c59,
+  },
+  sunset: {
+    W: 0xfff8e7,
+    R: 0xff6b6b,
+    G: 0xffab73,
+    Y: 0xffd93d,
+    O: 0xff8c42,
+    B: 0xf76c6c,
+  },
+  candy: {
+    W: 0xffffff,
+    R: 0xff6ec7,
+    G: 0x95e1d3,
+    Y: 0xffd93d,
+    O: 0xffa36c,
+    B: 0xa29bfe,
+  },
+  galaxy: {
+    W: 0xe8eaf6,
+    R: 0x9c27b0,
+    G: 0x00bcd4,
+    Y: 0xffc107,
+    O: 0xff5722,
+    B: 0x3f51b5,
+  },
+  retro: {
+    W: 0xfff4e6,
+    R: 0xe63946,
+    G: 0x06ffa5,
+    Y: 0xffbe0b,
+    O: 0xfb5607,
+    B: 0x1d3557,
+  },
+  cyberpunk: {
+    W: 0xf0f0f0,
+    R: 0xff0080,
+    G: 0x00ff9f,
+    Y: 0xffff00,
+    O: 0xff6600,
+    B: 0x00d9ff,
+  },
+  pastel: {
+    W: 0xffffff,
+    R: 0xffb3d9,
+    G: 0xb3e6cc,
+    Y: 0xffffb3,
+    O: 0xffd9b3,
+    B: 0xb3d9ff,
+  },
+  mint: {
+    W: 0xf7fff7,
+    R: 0xff6f91,
+    G: 0x95e1d3,
+    Y: 0xffd97d,
+    O: 0xffb085,
+    B: 0x9ed4d1,
+  },
 };
+
+let colorMap: CubeTheme = cubeThemes.classic;
 
 interface AnimationState {
   group: THREE.Group;
@@ -33,11 +111,19 @@ export class Canvas3DRenderer {
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private cubeGroup: THREE.Group;
+  private labelsGroup: THREE.Group;
+  private ambientLight: THREE.AmbientLight;
+  private keyLight: THREE.DirectionalLight;
+  private fillLight: THREE.DirectionalLight;
+  private rimLight: THREE.DirectionalLight;
   private isDragging = false;
   private previousMousePosition = { x: 0, y: 0 };
   private animation: AnimationState | null = null;
   private animationQueue: (() => void)[] = [];
   private canvas: HTMLCanvasElement;
+  private lightBrightness = 1.0;
+  private lightAngle = 45;
+  private currentCubeTheme = "classic";
   private debug: DebugConfig = {
     enabled: false,
     logAnimations: false,
@@ -95,17 +181,31 @@ export class Canvas3DRenderer {
     this.cubeGroup = new THREE.Group();
     this.scene.add(this.cubeGroup);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-    this.scene.add(ambientLight);
+    // Labels group
+    this.labelsGroup = new THREE.Group();
+    this.scene.add(this.labelsGroup);
+    this.createFaceLabels();
 
-    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.6);
-    directionalLight1.position.set(10, 10, 10);
-    this.scene.add(directionalLight1);
+    // Enhanced three-point lighting setup
+    // Ambient light - base illumination
+    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    this.scene.add(this.ambientLight);
 
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
-    directionalLight2.position.set(-10, -10, -10);
-    this.scene.add(directionalLight2);
+    // Key light - main directional light
+    this.keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    this.keyLight.position.set(10, 10, 10);
+    this.keyLight.castShadow = false;
+    this.scene.add(this.keyLight);
+
+    // Fill light - softer light from opposite side
+    this.fillLight = new THREE.DirectionalLight(0xaaccff, 0.6);
+    this.fillLight.position.set(-8, 5, -8);
+    this.scene.add(this.fillLight);
+
+    // Rim light - highlights edges
+    this.rimLight = new THREE.DirectionalLight(0xffccaa, 0.4);
+    this.rimLight.position.set(0, -10, -10);
+    this.scene.add(this.rimLight);
 
     // Mouse controls
     this.setupMouseControls(canvas);
@@ -134,6 +234,9 @@ export class Canvas3DRenderer {
 
       this.cubeGroup.rotation.y += deltaX * 0.01;
       this.cubeGroup.rotation.x += deltaY * 0.01;
+
+      // Rotate labels with cube
+      this.labelsGroup.rotation.copy(this.cubeGroup.rotation);
 
       this.previousMousePosition = { x: e.clientX, y: e.clientY };
     });
@@ -173,6 +276,9 @@ export class Canvas3DRenderer {
 
       this.cubeGroup.rotation.y += deltaX * 0.01;
       this.cubeGroup.rotation.x += deltaY * 0.01;
+
+      // Rotate labels with cube
+      this.labelsGroup.rotation.copy(this.cubeGroup.rotation);
 
       previousTouchPosition = { x: touch.clientX, y: touch.clientY };
       e.preventDefault();
@@ -222,6 +328,65 @@ export class Canvas3DRenderer {
     );
   }
 
+  private createFaceLabels(): void {
+    const labels = [
+      { text: "U", position: new THREE.Vector3(0, 2.2, 0), color: "#ffffff" },
+      { text: "D", position: new THREE.Vector3(0, -2.2, 0), color: "#ffff00" },
+      { text: "R", position: new THREE.Vector3(2.2, 0, 0), color: "#ff0000" },
+      { text: "L", position: new THREE.Vector3(-2.2, 0, 0), color: "#ff8800" },
+      { text: "F", position: new THREE.Vector3(0, 0, 2.2), color: "#00ff00" },
+      { text: "B", position: new THREE.Vector3(0, 0, -2.2), color: "#0000ff" },
+    ];
+
+    labels.forEach(({ text, position, color }) => {
+      const sprite = this.createTextSprite(text, color);
+      sprite.position.copy(position);
+      this.labelsGroup.add(sprite);
+    });
+  }
+
+  private createTextSprite(text: string, color: string): THREE.Sprite {
+    // Create canvas for text
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Could not get canvas context");
+
+    // Set canvas size
+    canvas.width = 128;
+    canvas.height = 128;
+
+    // Draw text
+    context.fillStyle = "rgba(0, 0, 0, 0.6)";
+    context.fillRect(0, 0, 128, 128);
+
+    context.font = "bold 72px Arial";
+    context.fillStyle = color;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(text, 64, 64);
+
+    // Add border
+    context.strokeStyle = "#000000";
+    context.lineWidth = 4;
+    context.strokeText(text, 64, 64);
+
+    // Create texture from canvas
+    const texture = new THREE.CanvasTexture(canvas);
+
+    // Create sprite material
+    const material = new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.8,
+    });
+
+    // Create sprite
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(0.8, 0.8, 1);
+
+    return sprite;
+  }
+
   private createCubie(
     cube: Cube,
     x: number,
@@ -249,8 +414,10 @@ export class Canvas3DRenderer {
       materials.push(
         new THREE.MeshStandardMaterial({
           color,
-          roughness: 0.4,
-          metalness: 0.1,
+          roughness: 0.3,
+          metalness: 0.2,
+          emissive: color,
+          emissiveIntensity: 0.1,
         }),
       );
     });
@@ -537,6 +704,42 @@ export class Canvas3DRenderer {
     });
 
     return { cubies, axis, angle };
+  }
+
+  toggleLabels(): boolean {
+    this.labelsGroup.visible = !this.labelsGroup.visible;
+    return this.labelsGroup.visible;
+  }
+
+  setBrightness(value: number): void {
+    this.lightBrightness = value;
+    this.ambientLight.intensity = 0.5 * value;
+    this.keyLight.intensity = 1.2 * value;
+    this.fillLight.intensity = 0.6 * value;
+    this.rimLight.intensity = 0.4 * value;
+  }
+
+  setLightAngle(angle: number): void {
+    this.lightAngle = angle;
+    const rad = (angle * Math.PI) / 180;
+    const distance = 10;
+
+    // Rotate key light around the cube
+    this.keyLight.position.set(
+      Math.cos(rad) * distance,
+      distance,
+      Math.sin(rad) * distance,
+    );
+
+    // Position fill light opposite to key light
+    this.fillLight.position.set(-Math.cos(rad) * 8, 5, -Math.sin(rad) * 8);
+  }
+
+  setCubeTheme(themeName: string): void {
+    if (cubeThemes[themeName]) {
+      this.currentCubeTheme = themeName;
+      colorMap = cubeThemes[themeName];
+    }
   }
 
   destroy(): void {

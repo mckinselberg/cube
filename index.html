@@ -29,6 +29,15 @@
                 3D Interactive
               </button>
             </div>
+            <div class="mode-selector" style="margin-top: 10px">
+              <button
+                id="toggle-labels"
+                class="mode-btn active"
+                title="Toggle face labels (U, R, F, D, L, B)"
+              >
+                🏷️ Face Labels
+              </button>
+            </div>
           </div>
 
           <div class="control-section">
@@ -81,6 +90,72 @@
                   <button class="move-btn" data-move="B'">B'</button>
                   <button class="move-btn" data-move="B2">B2</button>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <h3>🎨 Cube Colors</h3>
+            <div class="theme-selector">
+              <button class="cube-theme-btn active" data-cube-theme="classic">
+                🎯 Classic
+              </button>
+              <button class="cube-theme-btn" data-cube-theme="ocean">
+                🌊 Ocean
+              </button>
+              <button class="cube-theme-btn" data-cube-theme="forest">
+                🌲 Forest
+              </button>
+              <button class="cube-theme-btn" data-cube-theme="sunset">
+                🌅 Sunset
+              </button>
+              <button class="cube-theme-btn" data-cube-theme="candy">
+                🍬 Candy
+              </button>
+              <button class="cube-theme-btn" data-cube-theme="galaxy">
+                🌌 Galaxy
+              </button>
+              <button class="cube-theme-btn" data-cube-theme="retro">
+                📼 Retro
+              </button>
+              <button class="cube-theme-btn" data-cube-theme="cyberpunk">
+                🤖 Cyberpunk
+              </button>
+              <button class="cube-theme-btn" data-cube-theme="pastel">
+                🌸 Pastel
+              </button>
+              <button class="cube-theme-btn" data-cube-theme="mint">
+                🍃 Mint
+              </button>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <h3>💡 Lighting</h3>
+            <div class="lighting-controls">
+              <div class="control-group">
+                <label for="brightness-slider">Brightness</label>
+                <input
+                  type="range"
+                  id="brightness-slider"
+                  min="0.5"
+                  max="2.0"
+                  step="0.1"
+                  value="1.0"
+                />
+                <span id="brightness-value">100%</span>
+              </div>
+              <div class="control-group">
+                <label for="light-angle-slider">Light Angle</label>
+                <input
+                  type="range"
+                  id="light-angle-slider"
+                  min="0"
+                  max="360"
+                  step="15"
+                  value="45"
+                />
+                <span id="light-angle-value">45°</span>
               </div>
             </div>
           </div>
