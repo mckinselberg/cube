@@ -197,56 +197,66 @@
         <div class="controls-right">
           <div class="resize-handle"></div>
           <div class="control-section">
-            <h3>Sequence Input</h3>
-            <div class="action-controls">
-              <input
-                type="text"
-                id="move-sequence"
-                placeholder="e.g., R U R' U'"
-              />
-              <button id="apply-sequence" class="action-btn">
-                Apply Sequence
-              </button>
-            </div>
+            <details open>
+              <summary>Sequence Input</summary>
+              <div class="action-controls">
+                <input
+                  type="text"
+                  id="move-sequence"
+                  placeholder="e.g., R U R' U'"
+                />
+                <button id="apply-sequence" class="action-btn">
+                  Apply Sequence
+                </button>
+              </div>
+            </details>
           </div>
 
           <div class="control-section">
-            <h3>🧩 Algorithms</h3>
-            <div class="algorithm-controls">
-              <select id="algorithm-category" class="algorithm-select">
-                <option value="">Select Category...</option>
-                <option value="beginner">Beginner Patterns</option>
-                <option value="oll">OLL (Orient Last Layer)</option>
-                <option value="pll">PLL (Permute Last Layer)</option>
-                <option value="f2l">F2L (First Two Layers)</option>
-                <option value="tricks">Cool Tricks</option>
-              </select>
-              <select id="algorithm-select" class="algorithm-select" disabled>
-                <option value="">Choose an algorithm...</option>
-              </select>
-              <button id="apply-algorithm" class="action-btn" disabled>
-                Apply Algorithm
-              </button>
-              <div id="algorithm-info" class="algorithm-info"></div>
-            </div>
+            <details open>
+              <summary>🧩 Algorithms</summary>
+              <div class="algorithm-controls">
+                <select id="algorithm-category" class="algorithm-select">
+                  <option value="">Select Category...</option>
+                  <option value="beginner">Beginner Patterns</option>
+                  <option value="oll">OLL (Orient Last Layer)</option>
+                  <option value="pll">PLL (Permute Last Layer)</option>
+                  <option value="f2l">F2L (First Two Layers)</option>
+                  <option value="tricks">Cool Tricks</option>
+                </select>
+                <select id="algorithm-select" class="algorithm-select" disabled>
+                  <option value="">Choose an algorithm...</option>
+                </select>
+                <button id="apply-algorithm" class="action-btn" disabled>
+                  Apply Algorithm
+                </button>
+                <div id="algorithm-info" class="algorithm-info"></div>
+              </div>
+            </details>
           </div>
 
           <div class="control-section">
-            <h3>Move History</h3>
-            <div class="history">
-              <div id="move-history"></div>
-              <button id="undo" class="action-btn" disabled>Undo Last</button>
-            </div>
+            <details open>
+              <summary>Move History</summary>
+              <div class="history">
+                <div id="move-history"></div>
+                <button id="undo" class="action-btn" disabled>Undo Last</button>
+              </div>
+            </details>
           </div>
 
           <div class="control-section">
-            <h3>Actions</h3>
-            <div class="action-controls">
-              <button id="scramble" class="action-btn">Random Scramble</button>
-              <button id="reset" class="action-btn secondary">
-                Reset to Solved
-              </button>
-            </div>
+            <details open>
+              <summary>Actions</summary>
+              <div class="action-controls">
+                <button id="scramble" class="action-btn">
+                  Random Scramble
+                </button>
+                <button id="reset" class="action-btn secondary">
+                  Reset to Solved
+                </button>
+              </div>
+            </details>
           </div>
 
           <div class="control-section">

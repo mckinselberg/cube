@@ -179,12 +179,14 @@ header p {
   flex: 0 0 280px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  max-height: calc(100vh - 140px);
+  gap: 10px;
+  height: calc(100vh - 140px);
   overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
   min-width: 200px;
   max-width: 500px;
+  padding-bottom: 10px;
 }
 
 .resize-handle {
@@ -231,6 +233,7 @@ header p {
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
   transition: background 0.3s ease;
+  flex-shrink: 0;
 }
 
 .control-section h3 {
@@ -1288,10 +1291,32 @@ canvas.active {
   font-weight: 600;
   font-size: 1rem;
   padding: 4px 0;
-  list-style-position: outside;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.control-section details summary::marker,
+.control-section details summary::-webkit-details-marker {
+  display: none;
+}
+
+.control-section details summary::after {
+  content: "▼";
+  font-size: 0.7rem;
+  color: var(--label-color);
+  transition: transform 0.2s;
+}
+
+.control-section details[open] summary::after {
+  transform: rotate(-180deg);
 }
 
 .control-section details summary:hover {
+  color: var(--primary-color);
+}
+
+.control-section details summary:hover::after {
   color: var(--primary-color);
 }
 
