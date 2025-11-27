@@ -130,6 +130,10 @@ const textureConfigs: Record<TextureType, MaterialConfig> = {
 
 let currentTexture: TextureType = "plastic";
 
+type BackgroundType = "solid" | "gradient" | "particles" | "grid" | "space";
+
+let currentBackground: BackgroundType = "gradient";
+
 interface AnimationState {
   group: THREE.Group;
   axis: THREE.Vector3;
@@ -166,6 +170,9 @@ export class Canvas3DRenderer {
   private lightBrightness = 1.0;
   private lightAngle = 45;
   private currentCubeTheme = "classic";
+  private particles: THREE.Points | null = null;
+  private gridHelper: THREE.GridHelper | null = null;
+  private stars: THREE.Points | null = null;
   private debug: DebugConfig = {
     enabled: false,
     logAnimations: false,
@@ -219,7 +226,7 @@ export class Canvas3DRenderer {
     };
     // Scene setup
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x222222);
+    this.setupBackground(currentBackground);
 
     // Camera setup
     this.camera = new THREE.PerspectiveCamera(
@@ -808,6 +815,204 @@ export class Canvas3DRenderer {
 
   public getTexture(): TextureType {
     return currentTexture;
+  }
+
+  private setupBackground(type: BackgroundType): void {
+    // Clear existing background effects
+    if (this.particles) {
+      this.scene.remove(this.particles);
+      this.particles = null;
+    }
+    if (this.gridHelper) {
+      this.scene.remove(this.gridHelper);
+      this.gridHelper = null;
+    }
+    if (this.stars) {
+      this.scene.remove(this.stars);
+      this.stars = null;
+    }
+
+    switch (type) {
+      case "solid":
+        this.scene.background = new THREE.Color(0x1a1a2e);
+        break;
+
+      case "gradient":
+        // Create gradient using canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+          gradient.addColorStop(0, "#1a1a2e");
+          gradient.addColorStop(0.5, "#16213e");
+          gradient.addColorStop(1, "#0f3460");
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, 512, 512);
+          const texture = new THREE.CanvasTexture(canvas);
+          this.scene.background = texture;
+        }
+        break;
+
+      case "particles":
+        this.scene.background = new THREE.Color(0x0a0a0f);
+        this.createParticles();
+        break;
+
+      case "grid":
+        this.scene.background = new THREE.Color(0x1a1a2e);
+        this.createGrid();
+        break;
+
+      case "space":
+        this.scene.background = new THREE.Color(0x000510);
+        this.createStarfield();
+        break;
+    }
+  }
+
+  private createParticles(): void {
+    const particleCount = 1000;
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3;
+      // Random positions in a sphere around the cube
+      const radius = 15 + Math.random() * 20;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+
+      positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+      positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      positions[i3 + 2] = radius * Math.cos(phi);
+
+      // Cyan/blue particle colors
+      const brightness = 0.5 + Math.random() * 0.5;
+      colors[i3] = 0.2 * brightness;
+      colors[i3 + 1] = 0.8 * brightness;
+      colors[i3 + 2] = 1.0 * brightness;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.15,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.6,
+      blending: THREE.AdditiveBlending,
+    });
+
+    this.particles = new THREE.Points(geometry, material);
+    this.scene.add(this.particles);
+  }
+
+  private createGrid(): void {
+    // Ground grid
+    this.gridHelper = new THREE.GridHelper(20, 20, 0x00d4ff, 0x0f3460);
+    this.gridHelper.position.y = -5;
+    this.scene.add(this.gridHelper);
+
+    // Add some vertical grid lines for depth
+    const verticalLinesGeometry = new THREE.BufferGeometry();
+    const verticalPositions: number[] = [];
+
+    for (let x = -10; x <= 10; x += 2) {
+      for (let z = -10; z <= 10; z += 2) {
+        verticalPositions.push(x, -5, z);
+        verticalPositions.push(x, 10, z);
+      }
+    }
+
+    verticalLinesGeometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(verticalPositions, 3),
+    );
+
+    const verticalLinesMaterial = new THREE.LineBasicMaterial({
+      color: 0x0f3460,
+      transparent: true,
+      opacity: 0.2,
+    });
+
+    const verticalLines = new THREE.LineSegments(
+      verticalLinesGeometry,
+      verticalLinesMaterial,
+    );
+    this.scene.add(verticalLines);
+  }
+
+  private createStarfield(): void {
+    const starCount = 2000;
+    const positions = new Float32Array(starCount * 3);
+    const colors = new Float32Array(starCount * 3);
+    const sizes = new Float32Array(starCount);
+
+    for (let i = 0; i < starCount; i++) {
+      const i3 = i * 3;
+      // Random positions in a large sphere
+      const radius = 30 + Math.random() * 70;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+
+      positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+      positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      positions[i3 + 2] = radius * Math.cos(phi);
+
+      // Star colors (white with slight color variations)
+      const colorVariation = Math.random();
+      if (colorVariation > 0.97) {
+        // Blue stars
+        colors[i3] = 0.7;
+        colors[i3 + 1] = 0.8;
+        colors[i3 + 2] = 1.0;
+      } else if (colorVariation > 0.94) {
+        // Orange stars
+        colors[i3] = 1.0;
+        colors[i3 + 1] = 0.7;
+        colors[i3 + 2] = 0.5;
+      } else {
+        // White stars
+        const brightness = 0.8 + Math.random() * 0.2;
+        colors[i3] = brightness;
+        colors[i3 + 1] = brightness;
+        colors[i3 + 2] = brightness;
+      }
+
+      // Varying star sizes
+      sizes[i] = Math.random() * 0.3 + 0.1;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.2,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8,
+      sizeAttenuation: true,
+      blending: THREE.AdditiveBlending,
+    });
+
+    this.stars = new THREE.Points(geometry, material);
+    this.scene.add(this.stars);
+  }
+
+  public setBackground(type: BackgroundType): void {
+    currentBackground = type;
+    this.setupBackground(type);
+    localStorage.setItem("cube-background", type);
+  }
+
+  public getBackground(): BackgroundType {
+    return currentBackground;
   }
 
   destroy(): void {

@@ -279,9 +279,9 @@ header p {
 
 .theme-btn {
   padding: 8px 10px;
-  border: 1px solid #e5e5e5;
-  background: white;
-  color: #666;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-dark);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.8rem;
@@ -293,15 +293,15 @@ header p {
 }
 
 .theme-btn:hover {
-  background: #fafafa;
-  border-color: #ccc;
+  background: var(--panel-bg);
+  border-color: var(--label-color);
   opacity: 1;
   transform: translateX(2px);
 }
 
 .theme-btn.active {
   background: var(--primary-color);
-  color: white;
+  color: var(--bg-gradient-1);
   border-color: var(--primary-color);
   opacity: 1;
   box-shadow: 0 1px 4px
@@ -310,9 +310,9 @@ header p {
 
 .cube-theme-btn {
   padding: 8px 10px;
-  border: 1px solid #e5e5e5;
-  background: white;
-  color: #666;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-dark);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.8rem;
@@ -324,8 +324,8 @@ header p {
 }
 
 .cube-theme-btn:hover {
-  background: #fafafa;
-  border-color: #ccc;
+  background: var(--panel-bg);
+  border-color: var(--label-color);
   opacity: 1;
   transform: translateX(2px);
 }
@@ -340,9 +340,9 @@ header p {
 
 .texture-btn {
   padding: 8px 10px;
-  border: 1px solid #e5e5e5;
-  background: white;
-  color: #666;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-dark);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.8rem;
@@ -354,8 +354,8 @@ header p {
 }
 
 .texture-btn:hover {
-  background: #fafafa;
-  border-color: #ccc;
+  background: var(--panel-bg);
+  border-color: var(--label-color);
   opacity: 1;
   transform: translateX(2px);
 }
@@ -369,10 +369,41 @@ header p {
     color-mix(in srgb, var(--success-color) 20%, transparent);
 }
 
+.background-btn {
+  padding: 8px 10px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-dark);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+  opacity: 0.85;
+}
+
+.background-btn:hover {
+  background: var(--panel-bg);
+  border-color: var(--label-color);
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+.background-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  opacity: 1;
+  box-shadow: 0 1px 4px
+    color-mix(in srgb, var(--primary-color) 20%, transparent);
+}
+
 .mode-btn {
   padding: 12px;
   border: 2px solid var(--primary-color);
-  background: white;
+  background: var(--input-bg);
   color: var(--text-dark);
   border-radius: 8px;
   cursor: pointer;
@@ -383,7 +414,7 @@ header p {
 }
 
 .mode-btn:hover {
-  background: color-mix(in srgb, var(--primary-color) 10%, white);
+  background: var(--panel-bg);
   border-color: var(--primary-hover);
   transform: translateY(-1px);
 }
@@ -483,8 +514,8 @@ header p {
   flex: 1;
   padding: 10px 8px;
   border: 2px solid var(--accent-color);
-  background: white;
-  color: color-mix(in srgb, var(--accent-color) 80%, black);
+  background: var(--input-bg);
+  color: var(--accent-color);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -646,7 +677,7 @@ header p {
 
 .history h3 {
   margin-bottom: 10px;
-  color: #555;
+  color: var(--heading-color);
   font-size: 0.95rem;
 }
 
@@ -743,7 +774,7 @@ canvas.active {
 .debug-info {
   margin-top: auto;
   padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--input-border);
 }
 
 .debug-info details summary {
@@ -754,15 +785,16 @@ canvas.active {
 }
 
 .debug-info details summary:hover {
-  background: #f5f5f5;
+  background: var(--history-bg);
 }
 
 .debug-info code {
-  background: #f0f0f0;
+  background: var(--history-bg);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 0.8rem;
   font-family: "Courier New", monospace;
+  color: var(--text-dark);
 }
 
 .debug-info pre {

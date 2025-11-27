@@ -507,6 +507,14 @@ class CubeApp {
       });
     });
 
+    // Background switching
+    document.querySelectorAll(".background-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const background = btn.getAttribute("data-background");
+        if (background) this.switchBackground(background, btn);
+      });
+    });
+
     // Mode switching
     document.getElementById("mode-2d")?.addEventListener("click", () => {
       this.switchMode("2d");
@@ -936,6 +944,15 @@ class CubeApp {
       const btn = document.querySelector(`[data-texture="${savedTexture}"]`);
       if (btn) this.switchTexture(savedTexture, btn);
     }
+
+    // Load cube background
+    const savedBackground = localStorage.getItem("cube-background");
+    if (savedBackground) {
+      const btn = document.querySelector(
+        `[data-background="${savedBackground}"]`,
+      );
+      if (btn) this.switchBackground(savedBackground, btn);
+    }
   }
 
   private switchCubeTheme(themeName: string, btn: Element): void {
@@ -977,6 +994,27 @@ class CubeApp {
 
     // Save preference
     localStorage.setItem("cube-texture", texture);
+  }
+
+  private switchBackground(background: string, btn: Element): void {
+    // Remove active class from all background buttons
+    document.querySelectorAll(".background-btn").forEach((b) => {
+      b.classList.remove("active");
+    });
+
+    // Add active class to selected button
+    btn.classList.add("active");
+
+    // Apply background to 3D renderer
+    this.renderer3D.setBackground(
+      background as "solid" | "gradient" | "particles" | "grid" | "space",
+    );
+
+    // Re-render to show new background
+    this.render();
+
+    // Save preference
+    localStorage.setItem("cube-background", background);
   }
 
   private switchMode(mode: "2d" | "3d"): void {
