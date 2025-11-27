@@ -22,6 +22,7 @@
       <div class="main-content">
         <!-- Left Controls -->
         <div class="controls-left">
+          <div class="resize-handle"></div>
           <div class="control-section">
             <h3>View Mode</h3>
             <div class="mode-selector">
@@ -194,6 +195,7 @@
 
         <!-- Right Controls -->
         <div class="controls-right">
+          <div class="resize-handle"></div>
           <div class="control-section">
             <h3>Sequence Input</h3>
             <div class="action-controls">
@@ -249,10 +251,21 @@
 
           <div class="control-section">
             <details>
-              <summary style="cursor: pointer; user-select: none">
-                🔊 Sound Settings
-              </summary>
-              <div class="sound-controls" style="margin-top: 15px">
+              <summary>🔊 Sound Settings</summary>
+              <div class="sound-controls">
+                <!-- Preset Selection -->
+                <div class="preset-control">
+                  <label for="sound-preset">Sound Preset</label>
+                  <select id="sound-preset">
+                    <option value="balanced">Balanced</option>
+                    <option value="enhanced">Enhanced (Crisp)</option>
+                  </select>
+                  <p>
+                    <strong>Enhanced:</strong> Extreme crispness - very sharp,
+                    tight snaps.
+                  </p>
+                </div>
+
                 <!-- Volume -->
                 <div class="slider-control">
                   <label for="sound-volume">Volume</label>
@@ -268,15 +281,7 @@
                 </div>
 
                 <!-- 3-Band EQ -->
-                <h4
-                  style="
-                    margin-top: 15px;
-                    margin-bottom: 8px;
-                    font-size: 0.9rem;
-                  "
-                >
-                  3-Band EQ
-                </h4>
+                <h4>3-Band EQ</h4>
                 <div class="slider-control">
                   <label for="sound-low">Low (200 Hz)</label>
                   <input
@@ -315,15 +320,7 @@
                 </div>
 
                 <!-- Filter -->
-                <h4
-                  style="
-                    margin-top: 15px;
-                    margin-bottom: 8px;
-                    font-size: 0.9rem;
-                  "
-                >
-                  Filter
-                </h4>
+                <h4>Filter</h4>
                 <div class="slider-control">
                   <label for="sound-brightness">Brightness</label>
                   <input
@@ -338,15 +335,7 @@
                 </div>
 
                 <!-- Envelope -->
-                <h4
-                  style="
-                    margin-top: 15px;
-                    margin-bottom: 8px;
-                    font-size: 0.9rem;
-                  "
-                >
-                  Envelope
-                </h4>
+                <h4>Envelope</h4>
                 <div class="slider-control">
                   <label for="sound-attack">Attack</label>
                   <input
@@ -371,15 +360,22 @@
                   />
                   <span id="sound-decay-value">60 ms</span>
                 </div>
+
+                <!-- Export Settings Button -->
+                <button
+                  id="export-sound-settings"
+                  class="action-btn secondary"
+                  style="margin-top: 12px; width: 100%"
+                >
+                  📋 Export Settings
+                </button>
               </div>
             </details>
           </div>
 
           <div class="control-section debug-info">
             <details>
-              <summary style="cursor: pointer; user-select: none">
-                ⌨️ Keyboard Shortcuts
-              </summary>
+              <summary>⌨️ Keyboard Shortcuts</summary>
               <div style="margin-top: 10px; font-size: 0.85rem; color: #666">
                 <p style="margin-bottom: 8px">
                   <strong>Move keys:</strong>
@@ -399,9 +395,7 @@
 
           <div class="control-section debug-info">
             <details>
-              <summary style="cursor: pointer; user-select: none">
-                🔧 Debug Mode
-              </summary>
+              <summary>🔧 Debug Mode</summary>
               <div style="margin-top: 10px; font-size: 0.85rem; color: #666">
                 <p>
                   Add <code>?debug=true</code> to URL or open console and type:

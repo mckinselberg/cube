@@ -138,9 +138,174 @@ class CubeApp {
     this.renderer3D = new Canvas3DRenderer(canvas3D);
 
     this.loadThemePreference();
+    this.loadPanelStates();
+    this.loadViewMode();
+    this.loadAlgorithmSelection();
     this.setupMobileMoveButtons();
+    this.setupResizableColumns();
     this.setupEventListeners();
     this.render();
+  }
+
+  private savePanelState(panelId: string, isOpen: boolean): void {
+    localStorage.setItem(`panel-state-${panelId}`, isOpen.toString());
+  }
+
+  private loadPanelStates(): void {
+    // Find all details elements and restore their states
+    const panels = document.querySelectorAll("details");
+    panels.forEach((panel, index) => {
+      const summary = panel.querySelector("summary");
+      if (!summary) return;
+
+      // Create a unique ID based on summary text
+      const panelId =
+        summary.textContent
+          ?.trim()
+          .replace(/[^a-zA-Z0-9]/g, "-")
+          .toLowerCase() || `panel-${index}`;
+      const savedState = localStorage.getItem(`panel-state-${panelId}`);
+
+      if (savedState !== null) {
+        panel.open = savedState === "true";
+      }
+
+      // Add toggle listener to save state
+      panel.addEventListener("toggle", () => {
+        this.savePanelState(panelId, panel.open);
+      });
+    });
+  }
+
+  private saveViewMode(mode: "2d" | "3d"): void {
+    localStorage.setItem("view-mode", mode);
+  }
+
+  private loadViewMode(): void {
+    const savedMode = localStorage.getItem("view-mode") as "2d" | "3d" | null;
+    if (savedMode && (savedMode === "2d" || savedMode === "3d")) {
+      this.switchMode(savedMode);
+    }
+  }
+
+  private saveAlgorithmSelection(category: string, algorithm: string): void {
+    if (category) {
+      localStorage.setItem("algorithm-category", category);
+    }
+    if (algorithm) {
+      localStorage.setItem("algorithm-selection", algorithm);
+    }
+  }
+
+  private loadAlgorithmSelection(): void {
+    const savedCategory = localStorage.getItem("algorithm-category");
+    const savedAlgorithm = localStorage.getItem("algorithm-selection");
+
+    if (savedCategory) {
+      const categorySelect = document.getElementById(
+        "algorithm-category",
+      ) as HTMLSelectElement;
+      if (categorySelect) {
+        categorySelect.value = savedCategory;
+        this.updateAlgorithmList(savedCategory);
+
+        // After updating the list, restore the algorithm selection
+        if (savedAlgorithm) {
+          setTimeout(() => {
+            const algorithmSelect = document.getElementById(
+              "algorithm-select",
+            ) as HTMLSelectElement;
+            if (algorithmSelect) {
+              algorithmSelect.value = savedAlgorithm;
+              this.showAlgorithmInfo(savedAlgorithm);
+            }
+          }, 0);
+        }
+      }
+    }
+  }
+
+  private setupResizableColumns(): void {
+    const leftColumn = document.querySelector(".controls-left") as HTMLElement;
+    const rightColumn = document.querySelector(
+      ".controls-right",
+    ) as HTMLElement;
+
+    if (!leftColumn || !rightColumn) return;
+
+    // Setup left column resize
+    const leftHandle = leftColumn.querySelector(
+      ".resize-handle",
+    ) as HTMLElement;
+    if (leftHandle) {
+      this.setupResizeHandle(leftHandle, leftColumn, "left");
+    }
+
+    // Setup right column resize
+    const rightHandle = rightColumn.querySelector(
+      ".resize-handle",
+    ) as HTMLElement;
+    if (rightHandle) {
+      this.setupResizeHandle(rightHandle, rightColumn, "right");
+    }
+
+    // Load saved widths
+    const savedLeftWidth = localStorage.getItem("left-column-width");
+    if (savedLeftWidth) {
+      leftColumn.style.flexBasis = savedLeftWidth;
+    }
+
+    const savedRightWidth = localStorage.getItem("right-column-width");
+    if (savedRightWidth) {
+      rightColumn.style.flexBasis = savedRightWidth;
+    }
+  }
+
+  private setupResizeHandle(
+    handle: HTMLElement,
+    column: HTMLElement,
+    side: "left" | "right",
+  ): void {
+    let isResizing = false;
+    let startX = 0;
+    let startWidth = 0;
+
+    const startResize = (e: MouseEvent) => {
+      isResizing = true;
+      startX = e.clientX;
+      startWidth = column.offsetWidth;
+      handle.classList.add("dragging");
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+      e.preventDefault();
+    };
+
+    const resize = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const delta = side === "left" ? e.clientX - startX : startX - e.clientX;
+      const newWidth = Math.max(200, Math.min(500, startWidth + delta));
+
+      column.style.flexBasis = `${newWidth}px`;
+    };
+
+    const stopResize = () => {
+      if (!isResizing) return;
+
+      isResizing = false;
+      handle.classList.remove("dragging");
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+
+      // Save width to localStorage
+      const storageKey =
+        side === "left" ? "left-column-width" : "right-column-width";
+      localStorage.setItem(storageKey, column.style.flexBasis);
+    };
+
+    handle.addEventListener("mousedown", startResize);
+    document.addEventListener("mousemove", resize);
+    document.addEventListener("mouseup", stopResize);
   }
 
   private setupMobileMoveButtons(): void {
@@ -419,11 +584,14 @@ class CubeApp {
     categorySelect?.addEventListener("change", (e) => {
       const category = (e.target as HTMLSelectElement).value;
       this.updateAlgorithmList(category);
+      this.saveAlgorithmSelection(category, "");
     });
 
     algorithmSelect?.addEventListener("change", (e) => {
       const algorithmName = (e.target as HTMLSelectElement).value;
       this.showAlgorithmInfo(algorithmName);
+      const category = categorySelect?.value || "";
+      this.saveAlgorithmSelection(category, algorithmName);
     });
 
     applyAlgorithmBtn?.addEventListener("click", () => {
@@ -459,6 +627,17 @@ class CubeApp {
   }
 
   private setupSoundControls(): void {
+    // Preset selector
+    const presetSelect = document.getElementById(
+      "sound-preset",
+    ) as HTMLSelectElement;
+    presetSelect?.addEventListener("change", (e) => {
+      const preset = (e.target as HTMLSelectElement).value as
+        | "balanced"
+        | "enhanced";
+      this.soundEffects.setPreset(preset);
+    });
+
     // Volume
     const volumeSlider = document.getElementById(
       "sound-volume",
@@ -531,11 +710,25 @@ class CubeApp {
       if (decayValue) decayValue.textContent = `${Math.round(value * 1000)} ms`;
     });
 
+    // Export Settings button
+    const exportBtn = document.getElementById("export-sound-settings");
+    exportBtn?.addEventListener("click", () => {
+      this.soundEffects.exportCurrentSettings();
+    });
+
     // Load saved values and update UI
     this.loadSoundPreferences();
   }
 
   private loadSoundPreferences(): void {
+    // Restore preset selector
+    const presetSelect = document.getElementById(
+      "sound-preset",
+    ) as HTMLSelectElement;
+    if (presetSelect) {
+      presetSelect.value = this.soundEffects.getPreset();
+    }
+
     // Update slider values from saved preferences
     const volumeSlider = document.getElementById(
       "sound-volume",
@@ -730,6 +923,9 @@ class CubeApp {
       btn2D?.classList.remove("active");
       btn3D?.classList.add("active");
     }
+
+    // Save view mode preference
+    this.saveViewMode(mode);
 
     this.render();
   }

@@ -43,11 +43,38 @@
  *   - Expose parameters (intensity, brightness, decay, randomness) so we can tune how "heavy" or "smooth" the cube feels.
  */
 
+type SoundPreset = "balanced" | "enhanced";
+
+interface PresetParams {
+  frictionDuration: number;
+  frictionGain: number;
+  frictionCutoffBase: number;
+  frictionCutoffRange: number;
+  frictionQ: number;
+  slideDelay: number;
+  slideDuration: number;
+  slideDurationDouble: number;
+  slideGain: number;
+  slideCenterFreqBase: number;
+  slideCenterFreqRange: number;
+  slideQBase: number;
+  slideQRange: number;
+  snapNoiseGain: number;
+  snapNoiseCutoffBase: number;
+  snapNoiseCutoffRange: number;
+  snapNoiseQ: number;
+  snapThockGain: number;
+  snapThockDecay: number;
+  snapResonanceGain: number;
+  snapResonanceDecay: number;
+}
+
 export class CubeSoundEffects {
   private audioContext: AudioContext | null = null;
   private enabled = true;
-  private volume = 0.3;
+  private volume = 0.25;
   private noiseBuffer: AudioBuffer | null = null;
+  private currentPreset: SoundPreset = "balanced";
 
   // 3-band EQ (gain in dB)
   private lowGain = 0; // ~200 Hz
@@ -60,6 +87,56 @@ export class CubeSoundEffects {
 
   // Filter parameters
   private brightness = 0.5; // 0-1, affects filter cutoff frequencies
+
+  // Preset configurations
+  private readonly presets: Record<SoundPreset, PresetParams> = {
+    balanced: {
+      frictionDuration: 0.004,
+      frictionGain: 0.15,
+      frictionCutoffBase: 3200,
+      frictionCutoffRange: 2200,
+      frictionQ: 1.0,
+      slideDelay: 0.003,
+      slideDuration: 0.025,
+      slideDurationDouble: 0.035,
+      slideGain: 0.1,
+      slideCenterFreqBase: 2500,
+      slideCenterFreqRange: 700,
+      slideQBase: 1.8,
+      slideQRange: 0.6,
+      snapNoiseGain: 0.55,
+      snapNoiseCutoffBase: 4000,
+      snapNoiseCutoffRange: 3500,
+      snapNoiseQ: 1.8,
+      snapThockGain: 0.25,
+      snapThockDecay: 0.03,
+      snapResonanceGain: 0.18,
+      snapResonanceDecay: 0.025,
+    },
+    enhanced: {
+      frictionDuration: 0.003,
+      frictionGain: 0.12,
+      frictionCutoffBase: 3800,
+      frictionCutoffRange: 2800,
+      frictionQ: 1.5,
+      slideDelay: 0.002,
+      slideDuration: 0.02,
+      slideDurationDouble: 0.03,
+      slideGain: 0.08,
+      slideCenterFreqBase: 2200,
+      slideCenterFreqRange: 600,
+      slideQBase: 2.2,
+      slideQRange: 0.5,
+      snapNoiseGain: 0.7,
+      snapNoiseCutoffBase: 4500,
+      snapNoiseCutoffRange: 4000,
+      snapNoiseQ: 1.5,
+      snapThockGain: 0.18,
+      snapThockDecay: 0.022,
+      snapResonanceGain: 0.22,
+      snapResonanceDecay: 0.02,
+    },
+  };
 
   // Master EQ nodes (persistent)
   private lowShelf: BiquadFilterNode | null = null;
@@ -173,18 +250,21 @@ export class CubeSoundEffects {
 
     const baseFace = face.charAt(0).toUpperCase();
     const baseFreq = this.faceFrequencies[baseFace] || 380;
+    const preset = this.presets[this.currentPreset];
 
     const now = this.audioContext.currentTime;
 
     // Phase 1: Start friction (very short burst)
-    this.createFriction(now, 0.008);
+    this.createFriction(now, preset.frictionDuration, preset);
 
     // Phase 2: Slide (brief scrape)
-    const slideDuration = isDouble ? 0.045 : 0.035;
-    this.createSlide(now + 0.008, slideDuration);
+    const slideDuration = isDouble
+      ? preset.slideDurationDouble
+      : preset.slideDuration;
+    this.createSlide(now + preset.slideDelay, slideDuration, preset);
 
     // Phase 3: Snap/click (sharp transient)
-    const snapDelay = 0.008 + slideDuration;
+    const snapDelay = preset.slideDelay + slideDuration;
     const snapCount = isDouble ? 2 : 1;
 
     for (let i = 0; i < snapCount; i++) {
@@ -197,6 +277,7 @@ export class CubeSoundEffects {
         delay + timingJitter,
         baseFreq * freqRandomness,
         gainRandomness,
+        preset,
       );
     }
   }
@@ -228,25 +309,31 @@ export class CubeSoundEffects {
   /**
    * Phase 1: Start friction - very short burst of high-frequency noise
    */
-  private createFriction(startTime: number, duration: number): void {
+  private createFriction(
+    startTime: number,
+    duration: number,
+    preset: PresetParams,
+  ): void {
     if (!this.audioContext || !this.noiseBuffer || !this.lowShelf) return;
 
     const noise = this.audioContext.createBufferSource();
     noise.buffer = this.noiseBuffer;
 
-    // High-pass filter for plastic scraping sound (4-8 kHz emphasis)
+    // High-pass filter for plastic scraping sound
     const highPass = this.audioContext.createBiquadFilter();
     highPass.type = "highpass";
-    const cutoff = 4000 + (this.brightness - 0.5) * 3000; // 2.5-5.5 kHz range
+    const cutoff =
+      preset.frictionCutoffBase +
+      (this.brightness - 0.5) * preset.frictionCutoffRange;
     highPass.frequency.setValueAtTime(cutoff, startTime);
-    highPass.Q.setValueAtTime(0.5, startTime);
+    highPass.Q.setValueAtTime(preset.frictionQ, startTime);
 
     const gainNode = this.audioContext.createGain();
 
-    // Very short burst
+    // Soft burst
     gainNode.gain.setValueAtTime(0, startTime);
     gainNode.gain.linearRampToValueAtTime(
-      this.volume * 0.4,
+      this.volume * preset.frictionGain,
       startTime + this.attackTime,
     );
     gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
@@ -262,31 +349,40 @@ export class CubeSoundEffects {
   /**
    * Phase 2: Slide - soft scrape while turning
    */
-  private createSlide(startTime: number, duration: number): void {
+  private createSlide(
+    startTime: number,
+    duration: number,
+    preset: PresetParams,
+  ): void {
     if (!this.audioContext || !this.noiseBuffer || !this.lowShelf) return;
 
     const noise = this.audioContext.createBufferSource();
     noise.buffer = this.noiseBuffer;
 
-    // Band-pass filter for mid-high frequencies (2-6 kHz)
+    // Band-pass filter for mid-high frequencies
     const bandPass = this.audioContext.createBiquadFilter();
     bandPass.type = "bandpass";
     const centerFreq =
-      3500 + Math.random() * 1000 + (this.brightness - 0.5) * 2000;
+      preset.slideCenterFreqBase +
+      Math.random() * preset.slideCenterFreqRange +
+      (this.brightness - 0.5) * 1500;
     bandPass.frequency.setValueAtTime(centerFreq, startTime);
-    bandPass.Q.setValueAtTime(2 + Math.random(), startTime); // Q between 2-3
+    bandPass.Q.setValueAtTime(
+      preset.slideQBase + Math.random() * preset.slideQRange,
+      startTime,
+    );
 
     const gainNode = this.audioContext.createGain();
 
-    // Lower amplitude, gradual fade
+    // Gentler, more natural envelope
     gainNode.gain.setValueAtTime(0, startTime);
     gainNode.gain.linearRampToValueAtTime(
-      this.volume * 0.15,
-      startTime + 0.005,
+      this.volume * preset.slideGain,
+      startTime + 0.008,
     );
     gainNode.gain.linearRampToValueAtTime(
-      this.volume * 0.1,
-      startTime + duration * 0.6,
+      this.volume * preset.slideGain * 0.67,
+      startTime + duration * 0.7,
     );
     gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
 
@@ -305,56 +401,91 @@ export class CubeSoundEffects {
     startTime: number,
     thockFreq: number,
     gainMultiplier: number,
+    preset: PresetParams,
   ): void {
     if (!this.audioContext || !this.noiseBuffer || !this.lowShelf) return;
 
-    // Noise component (high-frequency content)
-    const noise = this.audioContext.createBufferSource();
-    noise.buffer = this.noiseBuffer;
+    // High-frequency click noise (plastic on plastic)
+    const clickNoise = this.audioContext.createBufferSource();
+    clickNoise.buffer = this.noiseBuffer;
 
-    // High-pass filter for sharp click (4-10 kHz)
-    const highPass = this.audioContext.createBiquadFilter();
-    highPass.type = "highpass";
-    const cutoff = 4000 + (this.brightness - 0.5) * 4000; // 2-6 kHz range
-    highPass.frequency.setValueAtTime(cutoff, startTime);
-    highPass.Q.setValueAtTime(1, startTime);
+    const clickFilter = this.audioContext.createBiquadFilter();
+    clickFilter.type = "bandpass";
+    const cutoff =
+      preset.snapNoiseCutoffBase +
+      (this.brightness - 0.5) * preset.snapNoiseCutoffRange;
+    clickFilter.frequency.setValueAtTime(cutoff, startTime);
+    clickFilter.Q.setValueAtTime(preset.snapNoiseQ, startTime);
 
-    const noiseGain = this.audioContext.createGain();
-    const decayTime = this.decayTime + Math.random() * 0.02; // Add slight variation
+    const clickGain = this.audioContext.createGain();
 
-    // Very sharp attack, exponential decay
-    noiseGain.gain.setValueAtTime(0, startTime);
-    noiseGain.gain.linearRampToValueAtTime(
-      this.volume * 0.7 * gainMultiplier,
+    // Very sharp transient
+    clickGain.gain.setValueAtTime(0, startTime);
+    clickGain.gain.linearRampToValueAtTime(
+      this.volume * preset.snapNoiseGain * gainMultiplier,
+      startTime + this.attackTime * 0.5,
+    );
+    clickGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.025);
+
+    clickNoise.connect(clickFilter);
+    clickFilter.connect(clickGain);
+    clickGain.connect(this.lowShelf);
+
+    clickNoise.start(startTime);
+    clickNoise.stop(startTime + 0.025);
+
+    // Low-frequency impact (body thump)
+    const impactNoise = this.audioContext.createBufferSource();
+    impactNoise.buffer = this.noiseBuffer;
+
+    const impactFilter = this.audioContext.createBiquadFilter();
+    impactFilter.type = "lowpass";
+    impactFilter.frequency.setValueAtTime(600, startTime);
+    impactFilter.Q.setValueAtTime(0.8, startTime);
+
+    const impactGain = this.audioContext.createGain();
+    impactGain.gain.setValueAtTime(0, startTime);
+    impactGain.gain.linearRampToValueAtTime(
+      this.volume * preset.snapResonanceGain * gainMultiplier,
+      startTime + 0.002,
+    );
+    impactGain.gain.exponentialRampToValueAtTime(
+      0.001,
+      startTime + preset.snapResonanceDecay,
+    );
+
+    impactNoise.connect(impactFilter);
+    impactFilter.connect(impactGain);
+    impactGain.connect(this.lowShelf);
+
+    impactNoise.start(startTime);
+    impactNoise.stop(startTime + preset.snapResonanceDecay);
+
+    // Subtle mechanical rattle (square wave with pitch drop)
+    const rattle = this.audioContext.createOscillator();
+    rattle.type = "square";
+    rattle.frequency.setValueAtTime(thockFreq * 0.8, startTime);
+    rattle.frequency.exponentialRampToValueAtTime(
+      thockFreq * 0.6,
+      startTime + preset.snapThockDecay,
+    );
+
+    const rattleGain = this.audioContext.createGain();
+    rattleGain.gain.setValueAtTime(0, startTime);
+    rattleGain.gain.linearRampToValueAtTime(
+      this.volume * preset.snapThockGain * gainMultiplier * 0.6,
       startTime + this.attackTime,
     );
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + decayTime);
-
-    noise.connect(highPass);
-    highPass.connect(noiseGain);
-    noiseGain.connect(this.lowShelf);
-
-    noise.start(startTime);
-    noise.stop(startTime + decayTime);
-
-    // Subtle "thock" layer (low-mid body)
-    const thock = this.audioContext.createOscillator();
-    thock.type = "triangle";
-    thock.frequency.setValueAtTime(thockFreq, startTime);
-
-    const thockGain = this.audioContext.createGain();
-    thockGain.gain.setValueAtTime(0, startTime);
-    thockGain.gain.linearRampToValueAtTime(
-      this.volume * 0.25 * gainMultiplier,
-      startTime + this.attackTime,
+    rattleGain.gain.exponentialRampToValueAtTime(
+      0.001,
+      startTime + preset.snapThockDecay,
     );
-    thockGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.04);
 
-    thock.connect(thockGain);
-    thockGain.connect(this.lowShelf);
+    rattle.connect(rattleGain);
+    rattleGain.connect(this.lowShelf);
 
-    thock.start(startTime);
-    thock.stop(startTime + 0.04);
+    rattle.start(startTime);
+    rattle.stop(startTime + preset.snapThockDecay);
   }
 
   /**
@@ -363,12 +494,13 @@ export class CubeSoundEffects {
   public playScrambleSound(): void {
     if (!this.enabled || !this.audioContext || !this.noiseBuffer) return;
 
+    const preset = this.presets[this.currentPreset];
     const now = this.audioContext.currentTime;
     // Rapid sequence of snaps at varying pitches
     const pitches = [420, 360, 400, 340, 380, 350];
     for (let i = 0; i < pitches.length; i++) {
       const delay = now + i * 0.05; // 50ms between snaps
-      this.createSnap(delay, pitches[i], 0.8);
+      this.createSnap(delay, pitches[i], 0.8, preset);
     }
   }
 
@@ -414,6 +546,11 @@ export class CubeSoundEffects {
     const savedVolume = localStorage.getItem("cube-sound-volume");
     if (savedVolume !== null) {
       this.volume = parseFloat(savedVolume);
+    }
+
+    const savedPreset = localStorage.getItem("cube-sound-preset");
+    if (savedPreset === "balanced" || savedPreset === "enhanced") {
+      this.currentPreset = savedPreset;
     }
 
     const savedLowGain = localStorage.getItem("cube-sound-lowGain");
@@ -499,13 +636,57 @@ export class CubeSoundEffects {
   /**
    * Debug method to check audio state
    */
-  public getAudioState(): Record<string, boolean | number> {
+  public getAudioState(): Record<string, boolean | number | string> {
     return {
       enabled: this.enabled,
       volume: this.volume,
       audioContextCreated: !!this.audioContext,
       noiseBufferCreated: !!this.noiseBuffer,
       eqSetup: !!(this.lowShelf && this.midPeak && this.highShelf),
+      preset: this.currentPreset,
     };
+  }
+
+  // Preset Management
+  public setPreset(preset: SoundPreset): void {
+    this.currentPreset = preset;
+    localStorage.setItem("cube-sound-preset", preset);
+  }
+
+  public getPreset(): SoundPreset {
+    return this.currentPreset;
+  }
+
+  public getAvailablePresets(): SoundPreset[] {
+    return ["balanced", "enhanced"];
+  }
+
+  public exportCurrentSettings(): void {
+    const settings = {
+      preset: this.currentPreset,
+      volume: this.volume,
+      eq: {
+        low: this.lowGain,
+        mid: this.midGain,
+        high: this.highGain,
+      },
+      envelope: {
+        attack: this.attackTime,
+        decay: this.decayTime,
+      },
+      brightness: this.brightness,
+    };
+
+    console.log("=== Current Sound Settings ===");
+    console.log(JSON.stringify(settings, null, 2));
+    console.log("==============================");
+
+    // Also copy to clipboard if available
+    if (navigator.clipboard) {
+      navigator.clipboard
+        .writeText(JSON.stringify(settings, null, 2))
+        .then(() => console.log("✓ Settings copied to clipboard!"))
+        .catch(() => console.log("⚠ Could not copy to clipboard"));
+    }
   }
 }

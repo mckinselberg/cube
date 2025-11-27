@@ -171,6 +171,7 @@ header p {
   gap: 20px;
   padding: 20px;
   min-height: 0;
+  position: relative;
 }
 
 .controls-left,
@@ -181,6 +182,45 @@ header p {
   gap: 15px;
   max-height: calc(100vh - 140px);
   overflow-y: auto;
+  position: relative;
+  min-width: 200px;
+  max-width: 500px;
+}
+
+.resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  cursor: col-resize;
+  user-select: none;
+  z-index: 10;
+}
+
+.resize-handle:hover::before,
+.resize-handle.dragging::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  background: var(--primary-color);
+  transform: translateX(-50%);
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.resize-handle.dragging::before {
+  opacity: 1;
+}
+
+.controls-left .resize-handle {
+  right: -5px;
+}
+
+.controls-right .resize-handle {
+  left: -5px;
 }
 
 .control-section {
@@ -710,6 +750,7 @@ canvas.active {
   header {
     padding: 15px 10px;
     flex-shrink: 0;
+    width: 100vw;
   }
 
   header h1 {
@@ -724,16 +765,20 @@ canvas.active {
   .main-content {
     flex-direction: column;
     gap: 15px;
-    padding: 15px 10px;
+    padding: 0;
     flex: 1;
+    width: 100vw;
   }
 
   .controls-left,
   .controls-right {
     flex: 0 0 auto;
-    width: 100%;
+    width: 100vw;
+    max-width: 100vw;
     max-height: none;
     overflow-y: visible;
+    padding: 0 10px;
+    box-sizing: border-box;
   }
 
   /* Reorder elements for mobile */
@@ -746,6 +791,10 @@ canvas.active {
     min-height: 400px;
     height: 50vh;
     max-height: 600px;
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0;
+    border-radius: 0;
   }
 
   .controls-right {
@@ -789,6 +838,89 @@ canvas.active {
     display: grid;
     grid-template-columns: 1fr;
     gap: 12px;
+    width: 100%;
+  }
+
+  /* Compact control sections on mobile */
+  .control-section {
+    padding: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 12px;
+    margin: 0 0 10px 0;
+  }
+
+  .control-section h3 {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  /* Make details/summary more compact on mobile */
+  .control-section details summary {
+    font-size: 0.9rem;
+    padding: 2px 0;
+  }
+
+  .control-section details[open] summary {
+    margin-bottom: 10px;
+  }
+
+  /* Compact sound controls on mobile */
+  .sound-controls {
+    max-height: 400px;
+    gap: 6px;
+  }
+
+  .sound-controls h4 {
+    font-size: 0.8rem;
+    margin-top: 6px;
+    margin-bottom: 3px;
+  }
+
+  .slider-control {
+    min-height: 28px;
+    gap: 6px;
+    padding: 3px 0;
+  }
+
+  .slider-control label {
+    flex: 0 0 90px;
+    font-size: 0.75rem;
+  }
+
+  .slider-control input[type="range"] {
+    height: 4px;
+  }
+
+  .slider-control input[type="range"]::-webkit-slider-thumb,
+  .slider-control input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+  }
+
+  .slider-control span {
+    flex: 0 0 50px;
+    font-size: 0.7rem;
+  }
+
+  .preset-control {
+    padding-bottom: 10px;
+    margin-bottom: 3px;
+  }
+
+  .preset-control label {
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+  }
+
+  .preset-control select {
+    padding: 7px;
+    font-size: 0.8rem;
+  }
+
+  .preset-control p {
+    font-size: 0.65rem;
+    margin-top: 5px;
   }
 
   /* Create mobile control rows */
@@ -817,11 +949,11 @@ canvas.active {
   .canvas-container {
     position: relative;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 8px;
+    padding: 0;
+    width: 100%;
   }
 
   /* Create mobile move button containers */
@@ -831,25 +963,27 @@ canvas.active {
     flex-direction: column;
     gap: 6px;
     flex: 0 0 55px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
   }
 
   .mobile-moves-left {
-    order: 1;
+    left: 8px;
   }
 
   #canvas-2d,
   #canvas-3d {
-    order: 2;
-    flex: 1 1 auto;
-    width: auto !important;
+    width: 100% !important;
     height: auto !important;
-    max-width: calc(100vw - 140px);
+    max-width: 100%;
     max-height: calc(50vh - 40px);
     object-fit: contain;
   }
 
   .mobile-moves-right {
-    order: 3;
+    right: 8px;
   }
 
   /* Mobile move button styling */
@@ -1026,8 +1160,9 @@ canvas.active {
   }
 
   .main-content {
-    gap: 12px;
-    padding: 12px 8px;
+    gap: 10px;
+    padding: 0;
+    width: 100vw;
   }
 
   .canvas-container {
@@ -1050,7 +1185,7 @@ canvas.active {
 
   #canvas-2d,
   #canvas-3d {
-    max-width: calc(100vw - 120px);
+    max-width: 100%;
     max-height: calc(45vh - 40px);
   }
 
@@ -1060,6 +1195,46 @@ canvas.active {
 
   .control-section h3 {
     font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+
+  .control-section details summary {
+    font-size: 0.85rem;
+  }
+
+  /* Even more compact sound controls */
+  .sound-controls {
+    max-height: 350px;
+    gap: 5px;
+  }
+
+  .sound-controls h4 {
+    font-size: 0.75rem;
+    margin-top: 5px;
+    margin-bottom: 2px;
+  }
+
+  .slider-control {
+    min-height: 26px;
+  }
+
+  .slider-control label {
+    flex: 0 0 80px;
+    font-size: 0.7rem;
+  }
+
+  .slider-control span {
+    flex: 0 0 45px;
+    font-size: 0.65rem;
+  }
+
+  .preset-control label,
+  .preset-control select {
+    font-size: 0.75rem;
+  }
+
+  .preset-control p {
+    font-size: 0.6rem;
   }
 
   .mode-btn {
@@ -1095,48 +1270,109 @@ canvas.active {
   .mobile-control-row {
     gap: 10px;
   }
+
+  /* Collapse panels by default on mobile */
+  .controls-right details:not(.keep-open) {
+    margin-bottom: 0;
+  }
+}
+
+/* Sound Settings Details/Summary */
+.control-section details {
+  width: 100%;
+}
+
+.control-section details summary {
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 4px 0;
+  list-style-position: outside;
+}
+
+.control-section details summary:hover {
+  color: var(--primary-color);
+}
+
+.control-section details[open] summary {
+  margin-bottom: 8px;
 }
 
 /* Sound Controls Styling */
 .sound-controls {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+  margin-right: -8px;
+  margin-top: 12px;
+}
+
+.sound-controls::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sound-controls::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sound-controls::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 3px;
+  opacity: 0.6;
+}
+
+.sound-controls::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+  opacity: 1;
 }
 
 .sound-controls h4 {
   color: var(--heading-color);
   border-bottom: 1px solid var(--input-border);
-  padding-bottom: 4px;
+  padding-bottom: 3px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
 }
 
 .slider-control {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 0;
+  gap: 8px;
+  padding: 4px 0;
+  min-height: 32px;
 }
 
 .slider-control label {
-  flex: 0 0 120px;
-  font-size: 0.85rem;
+  flex: 0 0 110px;
+  font-size: 0.8rem;
   color: var(--label-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .slider-control input[type="range"] {
   flex: 1;
-  height: 6px;
+  min-width: 0;
+  height: 5px;
   border-radius: 3px;
   background: var(--input-border);
   outline: none;
   -webkit-appearance: none;
+  appearance: none;
 }
 
 .slider-control input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--primary-color);
   cursor: pointer;
@@ -1145,12 +1381,12 @@ canvas.active {
 
 .slider-control input[type="range"]::-webkit-slider-thumb:hover {
   background: var(--primary-hover);
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
 .slider-control input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--primary-color);
   cursor: pointer;
@@ -1160,13 +1396,55 @@ canvas.active {
 
 .slider-control input[type="range"]::-moz-range-thumb:hover {
   background: var(--primary-hover);
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
 .slider-control span {
-  flex: 0 0 60px;
+  flex: 0 0 55px;
   text-align: right;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--primary-color);
+  white-space: nowrap;
+}
+
+.preset-control {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--input-border);
+}
+
+.preset-control label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--heading-color);
+}
+
+.preset-control select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 2px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-dark);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.preset-control select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--primary-color) 10%, transparent);
+}
+
+.preset-control p {
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--label-color);
+  line-height: 1.3;
+  opacity: 0.8;
 }
