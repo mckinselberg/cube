@@ -142,7 +142,23 @@ export class Canvas3DRenderer {
     }
 
     // Expose debug controls to window for console access
-    (window as any).cubeDebug = {
+    interface CubeDebug {
+      enable: () => void;
+      disable: () => void;
+      setSlowMotion: (factor: number) => void;
+      logAnimations: (val: boolean) => void;
+      logPositions: (val: boolean) => void;
+      highlightCubies: (val: boolean) => void;
+      getState: () => {
+        enabled: boolean;
+        slowMotion: number;
+        logAnimations: boolean;
+        logCubiePositions: boolean;
+        highlightAnimatingCubies: boolean;
+      };
+    }
+
+    (window as unknown as { cubeDebug: CubeDebug }).cubeDebug = {
       enable: () => this.enableDebug(),
       disable: () => this.disableDebug(),
       setSlowMotion: (factor: number) => {
@@ -303,8 +319,6 @@ export class Canvas3DRenderer {
     const size = 0.98;
     const spacing = 1.0;
 
-    console.log("Rendering 3D cube with", 26, "cubies");
-
     for (let x = 0; x < 3; x++) {
       for (let y = 0; y < 3; y++) {
         for (let z = 0; z < 3; z++) {
@@ -321,11 +335,6 @@ export class Canvas3DRenderer {
         }
       }
     }
-
-    console.log(
-      "3D cube rendered, total children:",
-      this.cubeGroup.children.length,
-    );
   }
 
   private createFaceLabels(): void {

@@ -2,6 +2,7 @@ import { createSolved, applyMove, parseMove, clone } from "./index.ts";
 import type { Cube } from "./cube/types.ts";
 import { Canvas2DRenderer } from "./visualization/canvas2D.ts";
 import { Canvas3DRenderer } from "./visualization/canvas3D.ts";
+import { Tooltip } from "./meta/Tooltip.ts";
 
 class CubeApp {
   private cube: Cube;
@@ -244,9 +245,73 @@ class CubeApp {
       btn.addEventListener("mouseup", handleEnd);
       btn.addEventListener("mouseleave", handleCancel);
     });
+
+    // Add tooltip to first mobile button only - with longer delay to ensure DOM is ready
+    setTimeout(() => {
+      const firstMobileBtn = document.querySelector(".mobile-move-btn");
+      if (firstMobileBtn && window.innerWidth <= 1200) {
+        console.log("Creating tooltip on:", firstMobileBtn);
+        new Tooltip(firstMobileBtn as HTMLElement, {
+          id: "mobile-moves-gestures",
+          message:
+            "💡 <strong>Tip:</strong> Tap for normal move, long press for prime ('), double tap for double move (2)",
+          position: "bottom",
+          arrowPosition: "start",
+          autoDismiss: 8000,
+          delay: 500,
+        });
+      } else {
+        console.log(
+          "Tooltip not created - button not found or not mobile view",
+        );
+      }
+    }, 1000);
+  }
+
+  private setupMobileCollapsible(): void {
+    // Make control sections collapsible on mobile
+    if (window.innerWidth <= 1200) {
+      document.querySelectorAll(".control-section").forEach((section) => {
+        const heading = section.querySelector("h3");
+        if (!heading) return;
+
+        // Don't make these sections collapsible (keep them accessible above fold)
+        const importantSections = [
+          "View Mode",
+          "Actions",
+          "Sequence Input",
+          "🧩 Algorithms",
+        ];
+        if (
+          importantSections.some((text) => heading.textContent?.includes(text))
+        ) {
+          section.classList.add("important");
+          return;
+        }
+
+        // Collapse sections below the fold by default
+        const collapsedByDefault = [
+          "Cube Moves",
+          "🎨 Cube Colors",
+          "Move History",
+        ];
+        if (
+          collapsedByDefault.some((text) => heading.textContent?.includes(text))
+        ) {
+          section.classList.add("collapsed");
+        }
+
+        heading.addEventListener("click", () => {
+          section.classList.toggle("collapsed");
+        });
+      });
+    }
   }
 
   private setupEventListeners(): void {
+    // Setup collapsible sections for mobile
+    this.setupMobileCollapsible();
+
     // Theme switching
     document.querySelectorAll(".theme-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -477,8 +542,9 @@ class CubeApp {
     // Add active class to selected button
     btn.classList.add("active");
 
-    // Apply theme to renderer
+    // Apply theme to both renderers
     this.renderer3D.setCubeTheme(themeName);
+    this.renderer2D.setCubeTheme(themeName);
 
     // Re-render to show new colors
     this.render();
@@ -524,7 +590,6 @@ class CubeApp {
           // Update cube state AFTER animation completes
           this.cube = applyMove(this.cube, move);
           this.history.push(clone(this.cube));
-          console.log(`After ${moveStr}:`, this.cube);
           this.render(); // Rebuild with new colors
         });
         // Update history immediately for UI feedback
@@ -533,7 +598,6 @@ class CubeApp {
         // 2D mode - instant update
         this.cube = applyMove(this.cube, move);
         this.history.push(clone(this.cube));
-        console.log(`After ${moveStr}:`, this.cube);
         this.updateHistory(moveStr);
         this.render();
       }
@@ -577,20 +641,32 @@ class CubeApp {
 
       animateNext();
     } else {
-      // 2D mode - instant updates
-      for (const moveStr of moves) {
+      // 2D mode - animate with delays
+      let index = 0;
+      const animationDelay = 150; // ms between moves
+
+      const animateNext = () => {
+        if (index >= moves.length) {
+          this.history.push(clone(this.cube));
+          return;
+        }
+
+        const moveStr = moves[index];
         try {
           const move = parseMove(moveStr);
           this.cube = applyMove(this.cube, move);
           this.updateHistory(moveStr);
+          this.render();
+
+          index++;
+          setTimeout(animateNext, animationDelay);
         } catch (error) {
           console.error("Invalid move in sequence:", moveStr);
           return;
         }
-      }
+      };
 
-      this.history.push(clone(this.cube));
-      this.render();
+      animateNext();
     }
   }
 

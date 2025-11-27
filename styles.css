@@ -355,6 +355,7 @@ header p {
   );
   outline: none;
   -webkit-appearance: none;
+  appearance: none;
 }
 
 .control-group input[type="range"]::-webkit-slider-thumb {
@@ -696,8 +697,35 @@ canvas.active {
 }
 
 @media (max-width: 1200px) {
+  body {
+    padding: 0;
+  }
+
+  .container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 15px 10px;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 2px;
+  }
+
+  header p {
+    font-size: 0.85rem;
+  }
+
   .main-content {
     flex-direction: column;
+    gap: 15px;
+    padding: 15px 10px;
+    flex: 1;
   }
 
   .controls-left,
@@ -710,21 +738,74 @@ canvas.active {
 
   /* Reorder elements for mobile */
   .controls-left {
-    order: 2;
+    order: 3;
   }
 
   .canvas-container {
     order: 1;
     min-height: 400px;
+    height: 50vh;
+    max-height: 600px;
   }
 
   .controls-right {
+    order: 2;
+  }
+
+  /* Priority ordering for controls-right sections */
+  .controls-right {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Sequence Input - order 1 (top) */
+  .controls-right .control-section:has(#move-sequence) {
+    order: 1;
+  }
+
+  /* Algorithms - order 2 */
+  .controls-right .control-section:has(.algorithm-controls) {
+    order: 2;
+  }
+
+  /* Actions - order 3 */
+  .controls-right .control-section:has(#scramble) {
     order: 3;
+  }
+
+  /* Move History - order 4 (below fold) */
+  .controls-right .control-section:has(#move-history) {
+    order: 4;
+  }
+
+  /* Debug sections - order 5 (bottom) */
+  .controls-right .debug-info {
+    order: 5;
+  }
+
+  /* Mobile grid layout for controls */
+  .controls-left,
+  .controls-right {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Create mobile control rows */
+  .mobile-control-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .mobile-control-row.single {
+    grid-template-columns: 1fr;
   }
 
   /* Hide less important sections on mobile */
   .theme-section,
-  .debug-info {
+  .debug-info,
+  .control-section:has(.lighting-controls) {
     display: none;
   }
 
@@ -738,8 +819,9 @@ canvas.active {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 10px;
-    padding: 10px;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px;
   }
 
   /* Create mobile move button containers */
@@ -747,8 +829,8 @@ canvas.active {
   .mobile-moves-right {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    flex: 0 0 60px;
+    gap: 6px;
+    flex: 0 0 55px;
   }
 
   .mobile-moves-left {
@@ -759,7 +841,11 @@ canvas.active {
   #canvas-3d {
     order: 2;
     flex: 1 1 auto;
-    max-width: calc(100vw - 140px); /* Account for side buttons */
+    width: auto !important;
+    height: auto !important;
+    max-width: calc(100vw - 140px);
+    max-height: calc(50vh - 40px);
+    object-fit: contain;
   }
 
   .mobile-moves-right {
@@ -768,24 +854,245 @@ canvas.active {
 
   /* Mobile move button styling */
   .mobile-move-btn {
-    width: 60px;
-    height: 60px;
+    width: 55px;
+    height: 55px;
     border: 2px solid var(--primary-color);
-    background: var(--btn-bg);
-    color: var(--text-color);
-    border-radius: 8px;
-    font-size: 1.2rem;
+    background: white;
+    color: var(--primary-color);
+    border-radius: 10px;
+    font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.15s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   .mobile-move-btn:active {
-    transform: scale(0.95);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transform: scale(0.92);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     background: var(--primary-color);
     color: white;
+  }
+
+  /* Compact control sections */
+  .control-section {
+    padding: 15px;
+    margin-bottom: 0;
+  }
+
+  .control-section h3 {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .control-section h3::after {
+    content: "▼";
+    font-size: 0.7rem;
+    transition: transform 0.3s;
+  }
+
+  .control-section.collapsed h3::after {
+    transform: rotate(-90deg);
+  }
+
+  .control-section.collapsed > *:not(h3) {
+    display: none;
+  }
+
+  .control-section.important h3::after {
+    display: none;
+  }
+
+  /* Mode selector improvements */
+  .mode-selector {
+    gap: 6px;
+  }
+
+  .mode-btn {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+
+  /* Action controls */
+  .action-controls {
+    gap: 8px;
+  }
+
+  .action-btn {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  /* Algorithm controls */
+  .algorithm-controls {
+    gap: 8px;
+  }
+
+  .algorithm-select {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+
+  /* History section */
+  .history {
+    max-height: 150px;
+  }
+
+  #move-history {
+    min-height: 50px;
+    max-height: 80px;
+    padding: 8px;
+  }
+
+  .history-move {
+    padding: 3px 6px;
+    font-size: 0.75rem;
+  }
+
+  /* Input fields */
+  #move-sequence {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+
+  /* Hide hint on mobile */
+  .hint {
+    display: none;
+  }
+
+  /* Cube theme buttons - 2 column grid on mobile */
+  .control-section:has(.cube-theme-btn) h3 {
+    margin-bottom: 8px;
+  }
+
+  .control-section:has(.cube-theme-btn) .theme-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .cube-theme-btn {
+    padding: 8px;
+    font-size: 0.75rem;
+  }
+
+  /* Move controls - show on mobile in compact grid */
+  .control-section:has(.move-controls) {
+    display: block !important;
+  }
+
+  .move-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .move-controls > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .move-group-label {
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+  }
+
+  .move-group {
+    gap: 4px;
+  }
+
+  .move-btn {
+    padding: 8px 6px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.3rem;
+  }
+
+  header p {
+    font-size: 0.8rem;
+  }
+
+  .main-content {
+    gap: 12px;
+    padding: 12px 8px;
+  }
+
+  .canvas-container {
+    height: 45vh;
+    max-height: 400px;
+  }
+
+  .mobile-moves-left,
+  .mobile-moves-right {
+    flex: 0 0 50px;
+    gap: 5px;
+  }
+
+  .mobile-move-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  #canvas-2d,
+  #canvas-3d {
+    max-width: calc(100vw - 120px);
+    max-height: calc(45vh - 40px);
+  }
+
+  .control-section {
+    padding: 12px;
+  }
+
+  .control-section h3 {
+    font-size: 0.85rem;
+  }
+
+  .mode-btn {
+    padding: 9px;
+    font-size: 0.8rem;
+  }
+
+  .action-btn {
+    padding: 11px;
+    font-size: 0.85rem;
+  }
+
+  .algorithm-select {
+    padding: 9px;
+    font-size: 0.8rem;
+  }
+
+  .cube-theme-btn {
+    padding: 7px;
+    font-size: 0.7rem;
+  }
+
+  #move-sequence {
+    padding: 9px;
+    font-size: 0.8rem;
+  }
+
+  .move-btn {
+    padding: 7px 5px;
+    font-size: 0.75rem;
+  }
+
+  .mobile-control-row {
+    gap: 10px;
   }
 }
