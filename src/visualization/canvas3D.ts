@@ -180,6 +180,38 @@ export class Canvas3DRenderer {
     highlightAnimatingCubies: false,
     slowMotion: 1,
   };
+    /**
+     * Print a debug comparison of the logical cube state and the rendered cubies.
+     * Call this after a scramble to verify mapping correctness.
+     */
+    public debugCompareCubeState(cube: Cube): void {
+      // Print logical cube state
+      console.log('--- Logical Cube State ---');
+      for (const face of ['U', 'R', 'F', 'D', 'L', 'B'] as const) {
+        // @ts-expect-error: dynamic access
+        console.log(`${face}:`, cube[face]);
+      }
+
+      // Print rendered cubie face colors
+      console.log('--- Rendered Cubies ---');
+      this.cubeGroup.children.forEach((cubie, idx) => {
+        const pos = cubie.position;
+        // @ts-expect-error: mesh material
+        const mesh = cubie;
+        let faceColors: string[] = [];
+        if (Array.isArray(mesh.material)) {
+          faceColors = mesh.material.map((mat: any) => {
+            // Try to get color hex
+            if (mat.color && mat.color.getHexString) {
+              return '#' + mat.color.getHexString();
+            }
+            return String(mat.color);
+          });
+        }
+        console.log(`Cubie ${idx} pos(${pos.x.toFixed(1)},${pos.y.toFixed(1)},${pos.z.toFixed(1)}):`, faceColors);
+      });
+      console.log('-------------------------');
+    }
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;

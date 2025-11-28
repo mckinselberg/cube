@@ -113,5 +113,24 @@ describe('Moves', () => {
       expect(result.U).toHaveLength(9);
       expect(result).not.toEqual(cube);
     });
+    });
+
+    describe('Scrambled cube ×4 move invariance', () => {
+      const moves = [U, R, F, D, L, B];
+      const moveNames = ['U', 'R', 'F', 'D', 'L', 'B'];
+      moveNames.forEach((name, i) => {
+        it(`should return to scrambled state after ${name} × 4`, () => {
+          // Scramble the cube with a random sequence
+          const scrambleSeq = "R U F D L B U' R' F' D' L' B'";
+          let scrambled = applyMoves(createSolved(), scrambleSeq);
+          const original = { ...scrambled };
+          // Apply the move 4 times
+          for (let j = 0; j < 4; j++) {
+            scrambled = moves[i](scrambled);
+          }
+          // Should be identical to the scrambled state
+          expect(scrambled).toEqual(original);
+        });
+      });
   });
 });
