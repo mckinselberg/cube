@@ -10,75 +10,109 @@ import { clone } from "../cube/clone.ts";
  * U move: Rotate the Up face clockwise 90 degrees
  */
 export function U(cube: Cube): Cube {
-  // Use clone for immutability
-  const newCube = clone(cube);
-  // Rotate U face
-  newCube.U = rotateFaceClockwise(cube.U);
-  // Save top rows
-  const f = cube.F.slice(0, 3);
-  const r = cube.R.slice(0, 3);
-  const b = cube.B.slice(0, 3);
-  const l = cube.L.slice(0, 3);
-  // Cycle top rows: F->R->B->L->F
-  newCube.F = [...r, ...cube.F.slice(3)];
-  newCube.R = [...b, ...cube.R.slice(3)];
-  newCube.B = [...l, ...cube.B.slice(3)];
-  newCube.L = [...f, ...cube.L.slice(3)];
-  return newCube;
+  // Use immutable assignment for all faces
+  return {
+    White: rotateFaceClockwise(cube.White),
+    Green: [
+      cube.Red[0],
+      cube.Red[1],
+      cube.Red[2],
+      cube.Green[3],
+      cube.Green[4],
+      cube.Green[5],
+      cube.Green[6],
+      cube.Green[7],
+      cube.Green[8],
+    ] as const,
+    Red: [
+      cube.Blue[0],
+      cube.Blue[1],
+      cube.Blue[2],
+      cube.Red[3],
+      cube.Red[4],
+      cube.Red[5],
+      cube.Red[6],
+      cube.Red[7],
+      cube.Red[8],
+    ] as const,
+    Blue: [
+      cube.Orange[0],
+      cube.Orange[1],
+      cube.Orange[2],
+      cube.Blue[3],
+      cube.Blue[4],
+      cube.Blue[5],
+      cube.Blue[6],
+      cube.Blue[7],
+      cube.Blue[8],
+    ] as const,
+    Orange: [
+      cube.Green[0],
+      cube.Green[1],
+      cube.Green[2],
+      cube.Orange[3],
+      cube.Orange[4],
+      cube.Orange[5],
+      cube.Orange[6],
+      cube.Orange[7],
+      cube.Orange[8],
+    ] as const,
+    Yellow: [...cube.Yellow] as const,
+  };
 }
 
 /**
  * U' move: Rotate the Up face counter-clockwise 90 degrees
  */
 export function UPrime(cube: Cube): Cube {
-  // Cycle the top row of F, L, B, R (reverse of U)
+  // Use immutable assignment for all faces
   return {
-    U: rotateFaceCounterClockwise(cube.U),
-    R: [
-      cube.F[0],
-      cube.F[1],
-      cube.F[2],
-      cube.R[3],
-      cube.R[4],
-      cube.R[5],
-      cube.R[6],
-      cube.R[7],
-      cube.R[8],
-    ],
-    F: [
-      cube.L[0],
-      cube.L[1],
-      cube.L[2],
-      cube.F[3],
-      cube.F[4],
-      cube.F[5],
-      cube.F[6],
-      cube.F[7],
-      cube.F[8],
-    ],
-    D: cube.D,
-    L: [
-      cube.B[0],
-      cube.B[1],
-      cube.B[2],
-      cube.L[3],
-      cube.L[4],
-      cube.L[5],
-      cube.L[6],
-      cube.L[7],
-      cube.L[8],
-    ],
-    B: [
-      cube.R[0],
-      cube.R[1],
-      cube.R[2],
-      cube.B[3],
-      cube.B[4],
-      cube.B[5],
-      cube.B[6],
-      cube.B[7],
-      cube.B[8],
-    ],
+    White: rotateFaceCounterClockwise(cube.White),
+    Green: [
+      cube.Orange[0],
+      cube.Orange[1],
+      cube.Orange[2],
+      cube.Green[3],
+      cube.Green[4],
+      cube.Green[5],
+      cube.Green[6],
+      cube.Green[7],
+      cube.Green[8],
+    ] as const,
+    Red: [
+      cube.Green[0],
+      cube.Green[1],
+      cube.Green[2],
+      cube.Red[3],
+      cube.Red[4],
+      cube.Red[5],
+      cube.Red[6],
+      cube.Red[7],
+      cube.Red[8],
+    ] as const,
+    Blue: [
+      cube.Red[0],
+      cube.Red[1],
+      cube.Red[2],
+      cube.Blue[3],
+      cube.Blue[4],
+      cube.Blue[5],
+      cube.Blue[6],
+      cube.Blue[7],
+      cube.Blue[8],
+    ] as const,
+    Orange: [
+      cube.Blue[0],
+      cube.Blue[1],
+      cube.Blue[2],
+      cube.Orange[3],
+      cube.Orange[4],
+      cube.Orange[5],
+      cube.Orange[6],
+      cube.Orange[7],
+      cube.Orange[8],
+    ] as const,
+    Yellow: [...cube.Yellow] as const,
   };
 }
 
@@ -86,53 +120,53 @@ export function UPrime(cube: Cube): Cube {
  * U2 move: Rotate the Up face 180 degrees
  */
 export function U2(cube: Cube): Cube {
-  // Swap opposite edges
+  // Use immutable assignment for all faces
   return {
-    U: rotateFace180(cube.U),
-    R: [
-      cube.L[0],
-      cube.L[1],
-      cube.L[2],
-      cube.R[3],
-      cube.R[4],
-      cube.R[5],
-      cube.R[6],
-      cube.R[7],
-      cube.R[8],
-    ],
-    F: [
-      cube.B[0],
-      cube.B[1],
-      cube.B[2],
-      cube.F[3],
-      cube.F[4],
-      cube.F[5],
-      cube.F[6],
-      cube.F[7],
-      cube.F[8],
-    ],
-    D: cube.D,
-    L: [
-      cube.R[0],
-      cube.R[1],
-      cube.R[2],
-      cube.L[3],
-      cube.L[4],
-      cube.L[5],
-      cube.L[6],
-      cube.L[7],
-      cube.L[8],
-    ],
-    B: [
-      cube.F[0],
-      cube.F[1],
-      cube.F[2],
-      cube.B[3],
-      cube.B[4],
-      cube.B[5],
-      cube.B[6],
-      cube.B[7],
-      cube.B[8],
-    ],
+    White: rotateFace180(cube.White),
+    Green: [
+      cube.Blue[0],
+      cube.Blue[1],
+      cube.Blue[2],
+      cube.Green[3],
+      cube.Green[4],
+      cube.Green[5],
+      cube.Green[6],
+      cube.Green[7],
+      cube.Green[8],
+    ] as const,
+    Red: [
+      cube.Orange[0],
+      cube.Orange[1],
+      cube.Orange[2],
+      cube.Red[3],
+      cube.Red[4],
+      cube.Red[5],
+      cube.Red[6],
+      cube.Red[7],
+      cube.Red[8],
+    ] as const,
+    Blue: [
+      cube.Green[0],
+      cube.Green[1],
+      cube.Green[2],
+      cube.Blue[3],
+      cube.Blue[4],
+      cube.Blue[5],
+      cube.Blue[6],
+      cube.Blue[7],
+      cube.Blue[8],
+    ] as const,
+    Orange: [
+      cube.Red[0],
+      cube.Red[1],
+      cube.Red[2],
+      cube.Orange[3],
+      cube.Orange[4],
+      cube.Orange[5],
+      cube.Orange[6],
+      cube.Orange[7],
+      cube.Orange[8],
+    ] as const,
+    Yellow: [...cube.Yellow] as const,
   };
 }

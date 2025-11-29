@@ -116,16 +116,16 @@ export class Canvas2DRenderer {
     const g = this.gap;
 
     // Net layout:
-    //       [U]
-    //  [L]  [F]  [R]  [B]
-    //       [D]
+    //       [White]
+    // [Orange] [Green] [Red] [Blue]
+    //       [Yellow]
 
-    this.drawFace(cube.U, s + g, 0); // U: top center
-    this.drawFace(cube.L, 0, s + g); // L: middle left
-    this.drawFace(cube.F, s + g, s + g); // F: middle center
-    this.drawFace(cube.R, (s + g) * 2, s + g); // R: middle right
-    this.drawFace(cube.B, (s + g) * 3, s + g); // B: middle far right
-    this.drawFace(cube.D, s + g, (s + g) * 2); // D: bottom center
+    this.drawFace(cube.White, s + g, 0); // Up (White)
+    this.drawFace(cube.Orange, 0, s + g); // Left (Orange)
+    this.drawFace(cube.Green, s + g, s + g); // Front (Green)
+    this.drawFace(cube.Red, (s + g) * 2, s + g); // Right (Red)
+    this.drawFace(cube.Blue, (s + g) * 3, s + g); // Back (Blue)
+    this.drawFace(cube.Yellow, s + g, (s + g) * 2); // Down (Yellow)
   }
 
   private drawFace(face: readonly Color[], x: number, y: number): void {

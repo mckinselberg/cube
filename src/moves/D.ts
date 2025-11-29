@@ -10,29 +10,55 @@ import {
  * D move: Rotate the Down face clockwise 90 degrees
  */
 export function D(cube: Cube): Cube {
-  // Use clone for immutability
-  const newCube = clone(cube);
-  // Rotate D face
-  newCube.D = rotateFaceClockwise(cube.D);
-  // Save bottom rows
-  const f = [cube.F[6], cube.F[7], cube.F[8]];
-  const r = [cube.R[6], cube.R[7], cube.R[8]];
-  const b = [cube.B[6], cube.B[7], cube.B[8]];
-  const l = [cube.L[6], cube.L[7], cube.L[8]];
-  // Cycle bottom rows: F->R->B->L->F
-  newCube.F[6] = l[0];
-  newCube.F[7] = l[1];
-  newCube.F[8] = l[2];
-  newCube.R[6] = f[0];
-  newCube.R[7] = f[1];
-  newCube.R[8] = f[2];
-  newCube.B[6] = r[0];
-  newCube.B[7] = r[1];
-  newCube.B[8] = r[2];
-  newCube.L[6] = b[0];
-  newCube.L[7] = b[1];
-  newCube.L[8] = b[2];
-  return newCube;
+  // Use immutable assignment for all faces
+  return {
+    White: [...cube.White] as const,
+    Green: [
+      cube.Green[0],
+      cube.Green[1],
+      cube.Green[2],
+      cube.Green[3],
+      cube.Green[4],
+      cube.Green[5],
+      cube.Orange[6],
+      cube.Orange[7],
+      cube.Orange[8],
+    ] as const,
+    Red: [
+      cube.Red[0],
+      cube.Red[1],
+      cube.Red[2],
+      cube.Red[3],
+      cube.Red[4],
+      cube.Red[5],
+      cube.Green[6],
+      cube.Green[7],
+      cube.Green[8],
+    ] as const,
+    Blue: [
+      cube.Blue[0],
+      cube.Blue[1],
+      cube.Blue[2],
+      cube.Blue[3],
+      cube.Blue[4],
+      cube.Blue[5],
+      cube.Red[6],
+      cube.Red[7],
+      cube.Red[8],
+    ] as const,
+    Orange: [
+      cube.Orange[0],
+      cube.Orange[1],
+      cube.Orange[2],
+      cube.Orange[3],
+      cube.Orange[4],
+      cube.Orange[5],
+      cube.Blue[6],
+      cube.Blue[7],
+      cube.Blue[8],
+    ] as const,
+    Yellow: rotateFaceClockwise(cube.Yellow),
+  };
 }
 
 /**

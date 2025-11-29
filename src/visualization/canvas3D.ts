@@ -180,38 +180,41 @@ export class Canvas3DRenderer {
     highlightAnimatingCubies: false,
     slowMotion: 1,
   };
-    /**
-     * Print a debug comparison of the logical cube state and the rendered cubies.
-     * Call this after a scramble to verify mapping correctness.
-     */
-    public debugCompareCubeState(cube: Cube): void {
-      // Print logical cube state
-      console.log('--- Logical Cube State ---');
-      for (const face of ['U', 'R', 'F', 'D', 'L', 'B'] as const) {
-        // @ts-expect-error: dynamic access
-        console.log(`${face}:`, cube[face]);
-      }
-
-      // Print rendered cubie face colors
-      console.log('--- Rendered Cubies ---');
-      this.cubeGroup.children.forEach((cubie, idx) => {
-        const pos = cubie.position;
-        // @ts-expect-error: mesh material
-        const mesh = cubie;
-        let faceColors: string[] = [];
-        if (Array.isArray(mesh.material)) {
-          faceColors = mesh.material.map((mat: any) => {
-            // Try to get color hex
-            if (mat.color && mat.color.getHexString) {
-              return '#' + mat.color.getHexString();
-            }
-            return String(mat.color);
-          });
-        }
-        console.log(`Cubie ${idx} pos(${pos.x.toFixed(1)},${pos.y.toFixed(1)},${pos.z.toFixed(1)}):`, faceColors);
-      });
-      console.log('-------------------------');
+  /**
+   * Print a debug comparison of the logical cube state and the rendered cubies.
+   * Call this after a scramble to verify mapping correctness.
+   */
+  public debugCompareCubeState(cube: Cube): void {
+    // Print logical cube state
+    console.log("--- Logical Cube State ---");
+    for (const face of ["U", "R", "F", "D", "L", "B"] as const) {
+      // @ts-expect-error: dynamic access
+      console.log(`${face}:`, cube[face]);
     }
+
+    // Print rendered cubie face colors
+    console.log("--- Rendered Cubies ---");
+    this.cubeGroup.children.forEach((cubie, idx) => {
+      const pos = cubie.position;
+      // @ts-expect-error: mesh material
+      const mesh = cubie;
+      let faceColors: string[] = [];
+      if (Array.isArray(mesh.material)) {
+        faceColors = mesh.material.map((mat: any) => {
+          // Try to get color hex
+          if (mat.color && mat.color.getHexString) {
+            return "#" + mat.color.getHexString();
+          }
+          return String(mat.color);
+        });
+      }
+      console.log(
+        `Cubie ${idx} pos(${pos.x.toFixed(1)},${pos.y.toFixed(1)},${pos.z.toFixed(1)}):`,
+        faceColors,
+      );
+    });
+    console.log("-------------------------");
+  }
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -492,12 +495,12 @@ export class Canvas3DRenderer {
     // Right (+X), Left (-X), Top (+Y), Bottom (-Y), Front (+Z), Back (-Z)
     // Material array order for THREE.js BoxGeometry
     const faceColors = [
-      x === 2 ? this.getFaceColor(cube.R, 2 - y, 2 - z) : 0x000000, // Right - try flipping z
-      x === 0 ? this.getFaceColor(cube.L, 2 - y, z) : 0x000000, // Left - try flipping z
-      y === 2 ? this.getFaceColor(cube.U, z, x) : 0x000000, // Top - try not flipping z
-      y === 0 ? this.getFaceColor(cube.D, 2 - z, x) : 0x000000, // Bottom - try flipping z
-      z === 2 ? this.getFaceColor(cube.F, 2 - y, x) : 0x000000, // Front
-      z === 0 ? this.getFaceColor(cube.B, 2 - y, 2 - x) : 0x000000, // Back
+      x === 2 ? this.getFaceColor(cube.Red, 2 - y, 2 - z) : 0x000000, // Right (Red)
+      x === 0 ? this.getFaceColor(cube.Orange, 2 - y, z) : 0x000000, // Left (Orange)
+      y === 2 ? this.getFaceColor(cube.White, z, x) : 0x000000, // Top (White)
+      y === 0 ? this.getFaceColor(cube.Yellow, 2 - z, x) : 0x000000, // Bottom (Yellow)
+      z === 2 ? this.getFaceColor(cube.Green, 2 - y, x) : 0x000000, // Front (Green)
+      z === 0 ? this.getFaceColor(cube.Blue, 2 - y, 2 - x) : 0x000000, // Back (Blue)
     ];
 
     const textureConfig = textureConfigs[currentTexture];

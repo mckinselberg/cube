@@ -1,6 +1,7 @@
 import { createSolved, applyMove, parseMove, clone } from "./index.ts";
 import type { Cube } from "./cube/types.ts";
 import { Canvas2DRenderer } from "./visualization/canvas2D.ts";
+import { renderCubeDebug, isDebugMode } from "./visualization/canvasDebug.ts";
 import { Canvas3DRenderer } from "./visualization/canvas3D.ts";
 import { Tooltip } from "./meta/Tooltip.ts";
 import { CubeSoundEffects } from "./audio/CubeSoundEffects.ts";
@@ -10,7 +11,7 @@ class CubeApp {
   private history: Cube[] = [];
   private renderer2D: Canvas2DRenderer;
   private renderer3D: Canvas3DRenderer;
-  private currentMode: "2d" | "3d" = "3d";
+  private currentMode: "2d" | "3d" | "debug" = "3d";
   private soundEffects: CubeSoundEffects;
   private algorithms = {
     beginner: {
@@ -129,10 +130,17 @@ class CubeApp {
     // Initialize renderers
     const canvas2D = document.getElementById("canvas-2d") as HTMLCanvasElement;
     const canvas3D = document.getElementById("canvas-3d") as HTMLCanvasElement;
+    const canvasDebug = document.getElementById(
+      "canvas-debug",
+    ) as HTMLCanvasElement;
 
-    // Set 3D canvas size BEFORE creating renderer
+    // Set canvas sizes BEFORE creating renderers
+    canvas2D.width = 600;
+    canvas2D.height = 600;
     canvas3D.width = 600;
     canvas3D.height = 600;
+    canvasDebug.width = 600;
+    canvasDebug.height = 600;
 
     this.renderer2D = new Canvas2DRenderer(canvas2D);
     this.renderer3D = new Canvas3DRenderer(canvas3D);
@@ -140,6 +148,10 @@ class CubeApp {
     this.loadThemePreference();
     this.loadPanelStates();
     this.loadViewMode();
+    // If debug mode is enabled, switch to debug view
+    if (isDebugMode()) {
+      this.switchMode("debug");
+    }
     this.loadAlgorithmSelection();
     this.setupMobileMoveButtons();
     this.setupResizableColumns();
@@ -182,8 +194,15 @@ class CubeApp {
   }
 
   private loadViewMode(): void {
-    const savedMode = localStorage.getItem("view-mode") as "2d" | "3d" | null;
-    if (savedMode && (savedMode === "2d" || savedMode === "3d")) {
+    const savedMode = localStorage.getItem("view-mode") as
+      | "2d"
+      | "3d"
+      | "debug"
+      | null;
+    if (
+      savedMode &&
+      (savedMode === "2d" || savedMode === "3d" || savedMode === "debug")
+    ) {
       this.switchMode(savedMode);
     }
   }
@@ -523,6 +542,19 @@ class CubeApp {
     document.getElementById("mode-3d")?.addEventListener("click", () => {
       this.switchMode("3d");
     });
+
+    // Debug mode button: only show if debug mode is true
+    const debugBtn = document.getElementById("mode-debug");
+    if (debugBtn) {
+      if (isDebugMode()) {
+        debugBtn.style.display = "inline-block";
+        debugBtn.addEventListener("click", () => {
+          this.switchMode("debug");
+        });
+      } else {
+        debugBtn.style.display = "none";
+      }
+    }
 
     // Toggle face labels
     document.getElementById("toggle-labels")?.addEventListener("click", () => {
@@ -1022,22 +1054,38 @@ class CubeApp {
 
     const canvas2D = document.getElementById("canvas-2d");
     const canvas3D = document.getElementById("canvas-3d");
+    const canvasDebug = document.getElementById(
+      "canvas-debug",
+    ) as HTMLCanvasElement | null;
     const hint = document.getElementById("hint-3d");
     const btn2D = document.getElementById("mode-2d");
     const btn3D = document.getElementById("mode-3d");
+    const btnDebug = document.getElementById("mode-debug");
 
     if (mode === "2d") {
       canvas2D?.classList.add("active");
       canvas3D?.classList.remove("active");
+      canvasDebug?.classList.remove("active");
       hint?.classList.remove("visible");
       btn2D?.classList.add("active");
       btn3D?.classList.remove("active");
-    } else {
+      btnDebug?.classList.remove("active");
+    } else if (mode === "3d") {
       canvas2D?.classList.remove("active");
       canvas3D?.classList.add("active");
+      canvasDebug?.classList.remove("active");
       hint?.classList.add("visible");
       btn2D?.classList.remove("active");
       btn3D?.classList.add("active");
+      btnDebug?.classList.remove("active");
+    } else if (mode === "debug") {
+      canvas2D?.classList.remove("active");
+      canvas3D?.classList.remove("active");
+      canvasDebug?.classList.add("active");
+      hint?.classList.remove("visible");
+      btn2D?.classList.remove("active");
+      btn3D?.classList.remove("active");
+      btnDebug?.classList.add("active");
     }
 
     // Save view mode preference
@@ -1334,8 +1382,19 @@ class CubeApp {
   private render(): void {
     if (this.currentMode === "2d") {
       this.renderer2D.render(this.cube);
-    } else {
+    } else if (this.currentMode === "3d") {
       this.renderer3D.render(this.cube);
+    } else if (this.currentMode === "debug") {
+      const canvasDebug = document.getElementById(
+        "canvas-debug",
+      ) as HTMLCanvasElement | null;
+      if (canvasDebug) {
+        const ctx = canvasDebug.getContext("2d");
+        if (ctx) {
+          ctx.clearRect(0, 0, canvasDebug.width, canvasDebug.height);
+          renderCubeDebug(this.cube, ctx, 32, 32, 48);
+        }
+      }
     }
   }
 }

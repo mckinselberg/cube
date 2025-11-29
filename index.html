@@ -30,6 +30,10 @@
               <button id="mode-3d" class="mode-btn active">
                 3D Interactive
               </button>
+              <!-- Debug Mode Button: Only shown when debug mode is true -->
+              <button id="mode-debug" class="mode-btn" style="display: none">
+                Debug Renderer
+              </button>
             </div>
             <div class="mode-selector" style="margin-top: 10px">
               <button
@@ -226,6 +230,7 @@
         <div class="canvas-container">
           <canvas id="canvas-2d"></canvas>
           <canvas id="canvas-3d" class="active"></canvas>
+          <canvas id="canvas-debug"></canvas>
           <p class="hint" id="hint-3d" class="visible">
             💡 Drag or swipe to rotate
           </p>
